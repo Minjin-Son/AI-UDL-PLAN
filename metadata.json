@@ -1,0 +1,5 @@
+{
+  "name": "udl-ai-lesson plan generator",
+  "description": "보편적 학습 설계(UDL) 원칙에 기반한 지도안을 생성하는 AI 기반 웹 애플리케이션입니다.",
+  "requestFramePermissions": []
+}
