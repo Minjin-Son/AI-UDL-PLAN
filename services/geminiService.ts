@@ -1,16 +1,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet } from '../types';
+import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet, DetailedObjectives } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+// AI가 생성할 기본 지도안의 데이터 설계도
 const responseSchema = {
     type: Type.OBJECT,
     properties: {
         lessonTitle: { type: Type.STRING },
         subject: { type: Type.STRING },
         gradeLevel: { type: Type.STRING },
-
-        // ✅ '전체/일부/소수' 목표를 담을 객체를 추가합니다.
         detailedObjectives: {
             type: Type.OBJECT,
             properties: {
@@ -22,52 +21,61 @@ const responseSchema = {
         },
         contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
         learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
+        udlPrinciples: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    principle: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    strategies: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                guideline: { type: Type.STRING },
+                                strategy: { type: Type.STRING },
+                                example: { type: Type.STRING },
+                            },
+                             required: ["guideline", "strategy", "example"]
+                        }
+                    }
+                },
+                required: ["principle", "description", "strategies"]
+            }
+        },
+        assessment: {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                methods: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                }
+            },
+            required: ["title", "methods"]
+        }
+    },
+    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
+};
 
-        udlPrinciples: {
-            type: Type.ARRAY,
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    principle: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    strategies: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                guideline: { type: Type.STRING },
-                                strategy: { type: Type.STRING },
-                                example: { type: Type.STRING },
-                            },
-                             required: ["guideline", "strategy", "example"]
-                        }
-                    }
-                },
-                required: ["principle", "description", "strategies"]
-            }
-        },
-        assessment: {
-            type: Type.OBJECT,
-            properties: {
-                title: { type: Type.STRING },
-                methods: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            },
-            required: ["title", "methods"]
-        }
+// ✅ [새로 추가] 1, 2단계 내용만 생성하기 위한 간단한 설계도
+const analysisOnlySchema = {
+    type: Type.OBJECT,
+    properties: {
+        contextAnalysis: { type: Type.STRING },
+        learnerAnalysis: { type: Type.STRING },
     },
-    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
+    required: ["contextAnalysis", "learnerAnalysis"]
 };
 
 
 export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<GeneratedLessonPlan> => {
-    const { gradeLevel, semester, subject, topic, duration, objectives, unitName, achievementStandards, specialNeeds, studentCharacteristics } = inputs;
+    const { gradeLevel, semester, subject, topic, duration, objectives, unitName, achievementStandards, specialNeeds, studentCharacteristics } = inputs;
 
-    const prompt = `
+    const prompt = `
       당신은 2022 개정 교육과정과 보편적 학습 설계(UDL)를 전문으로 하는 수업 설계 전문가입니다.
-      당신의 임무는 사용자의 입력을 바탕으로, '보편적 학습 설계 한국 틀' 형식에 맞는 포괄적인 지도안을 만드는 것입니다.
+      당신의 임무는 사용자의 입력을 바탕으로, '보편적 학습 설계 한국 틀' 형식에 맞는 포괄적인 지도안을 만드는 것입니다.
 
       **사용자 수업 정보:**
       - **학년:** ${gradeLevel} (${semester})
@@ -76,40 +84,80 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
       - **수업 주제:** ${topic}
       - **성취기준:** ${achievementStandards}
       - **수업 시간:** ${duration}
-      - **학습 목표:** ${objectives}
+      - **핵심 학습 목표:** ${objectives}
       - **고려할 특수교육대상 학생 유형:** ${specialNeeds || '해당 없음'}
-      - **특수교육대상 학생의 구체적인 특성:** ${studentCharacteristics || '구체적인 정보 없음. '}
+      - **특수교육대상 학생의 구체적인 특성:** ${studentCharacteristics || '구체적인 정보 없음.'}
 
-       **지도안 생성 지침:**
-      1.  **1단계 - 목표 세분화:** 사용자가 입력한 '핵심 학습 목표'를 바탕으로, 모든 학생(overall), 일부 학생(some), 소수 학생(few)을 위한 세분화된 목표를 'detailedObjectives' 객체에 작성해주세요.
+      **지도안 생성 지침:**
+      1.  **1단계 - 목표 세분화:** 사용자가 입력한 '핵심 학습 목표'를 바탕으로, 모든 학생(overall), 일부 학생(some), 소수 학생(few)을 위한 세분화된 목표를 'detailedObjectives' 객체에 작성해주세요.
       2.  **2단계 - 분석:** 2022 개정 교육과정에 근거하여, '상황 분석(contextAnalysis)'과 '학습자 분석(learnerAnalysis)' 항목을 각각 2~3 문장으로 구체적으로 작성해주세요. 상황 분석은 수업 환경과 맥락을, 학습자 분석은 학생들의 발달 특성을 고려해야 합니다.
-      3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표현, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
-      4.  **평가 계획:** 학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
-      5.  **기타:** 'lessonTitle'은 주제와 관련하여 창의적으로 작성하고, 'subject'와 'gradeLevel'은 입력받은 값을 그대로 사용해주세요.
-      6.  **출력 형식:** 제공된 스키마를 준수하는 JSON 객체 형식으로, 모든 내용을 한국어로 작성해주세요.
+      3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표현, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
+      4.  **평가 계획:** 학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
+      5.  **기타:** 'lessonTitle'은 주제와 관련하여 창의적으로 작성하고, 'subject'와 'gradeLevel'은 입력받은 값을 그대로 사용해주세요.
+      6.  **출력 형식:** 제공된 스키마를 준수하는 JSON 객체 형식으로, 모든 내용을 한국어로 작성해주세요.
     `;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: responseSchema,
-                temperature: 0.7,
-            },
-        });
-        
-        const jsonText = response.text.trim();
-        const parsedPlan = JSON.parse(jsonText) as GeneratedLessonPlan;
-        parsedPlan.achievementStandard = inputs.achievementStandards;
-         
-        return parsedPlan;
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+                temperature: 0.7,
+            },
+        });
+        
+        const jsonText = response.text.trim();
+        // ✅ AI가 반환한 결과를 임시로 저장합니다.
+        let parsedPlan = JSON.parse(jsonText) as Partial<GeneratedLessonPlan>;
 
-    } catch (error) {
-        console.error("Error generating lesson plan:", error);
-        throw new Error("AI로부터 지도안을 생성하는 데 실패했습니다. 응답이 유효한 JSON이 아닐 수 있습니다.");
-    }
+        // ✅ [새로 추가] AI가 1, 2단계 내용을 빠뜨렸는지 확인하고, 그렇다면 다시 요청하는 '보험용' 코드
+        if (!parsedPlan.contextAnalysis || !parsedPlan.learnerAnalysis) {
+            console.warn("AI did not generate analysis fields. Trying a fallback prompt...");
+
+            const analysisPrompt = `
+                주어진 수업 정보를 바탕으로 '상황 분석'과 '학습자 분석'을 2022 개정 교육과정에 맞게 각각 2~3문장으로 작성해주세요.
+
+                **수업 정보:**
+                - 학년: ${inputs.gradeLevel}
+                - 과목: ${inputs.subject}
+                - 주제: ${inputs.topic}
+
+                **출력 형식 (JSON):**
+                {
+                  "contextAnalysis": "여기에 상황 분석 내용 작성",
+                  "learnerAnalysis": "여기에 학습자 분석 내용 작성"
+                }
+            `;
+
+            const analysisResponse = await ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: analysisPrompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: analysisOnlySchema, // 새로 만든 간단한 설계도 사용
+                    temperature: 0.7,
+                },
+            });
+
+            const analysisJsonText = analysisResponse.text.trim();
+            const analysisContent = JSON.parse(analysisJsonText);
+
+            // 다시 요청해서 받은 1, 2단계 내용을 기존 결과에 합칩니다.
+            parsedPlan = { ...parsedPlan, ...analysisContent };
+        }
+        
+        // 사용자 입력을 최종 결과에 포함시킵니다.
+        parsedPlan.achievementStandard = inputs.achievementStandards;
+
+        // 최종적으로 완전한 형태의 지도안으로 변환하여 반환합니다.
+        return parsedPlan as GeneratedLessonPlan;
+
+    } catch (error) {
+        console.error("Error generating lesson plan:", error);
+        throw new Error("AI로부터 지도안을 생성하는 데 실패했습니다. 응답이 유효한 JSON이 아닐 수 있습니다.");
+    }
 };
 
 const tablePlanSchema = {
