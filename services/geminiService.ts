@@ -99,7 +99,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -132,7 +132,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             `;
 
             const analysisResponse = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-2.5-pro",
                 contents: analysisPrompt,
                 config: {
                     responseMimeType: "application/json",
@@ -271,7 +271,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -317,7 +317,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -373,7 +373,7 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -424,7 +424,7 @@ export const generateLearningObjective = async (gradeLevel: string, semester: st
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -508,7 +508,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
     
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -615,7 +615,7 @@ export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promi
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -715,7 +715,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.5-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
