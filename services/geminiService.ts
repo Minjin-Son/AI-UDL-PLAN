@@ -102,7 +102,8 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
         
         const jsonText = response.text.trim();
         const parsedPlan = JSON.parse(jsonText) as GeneratedLessonPlan;
-
+        parsedPlan.achievementStandard = inputs.achievementStandards;
+         
         return parsedPlan;
 
     } catch (error) {
@@ -677,6 +678,8 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
         
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as ProcessEvaluationWorksheet;
+
+        
 
     } catch (error) {
         console.error("Error generating process evaluation worksheet:", error);
