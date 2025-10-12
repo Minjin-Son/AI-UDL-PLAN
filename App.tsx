@@ -345,7 +345,7 @@ const App: React.FC = () => {
       <div className="no-print">
         <Header />
       </div>
-      <main className="flex-grow w-full max-w-screen-xl mx-auto p-4 md:p-8">
+      <main className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
           <div className="no-print lg:col-span-3">
             <FormPanel
