@@ -1,189 +1,235 @@
 import React from 'react';
-import { GeneratedLessonPlan, UDLPrincipleSection, UDLStrategy } from '../types';
+import { GeneratedLessonPlan, UDLPrincipleSection, UDLStrategy, DetailedObjectives } from '../types';
 
-// 텍스트 길이에 따라 자동으로 높이가 조절되는 Textarea
+// 자동 높이 조절 텍스트 영역 컴포넌트
 interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
-
 const AutoGrowTextarea: React.FC<AutoGrowTextareaProps> = (props) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  React.useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'inherit';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [props.value]);
-
-  return <textarea ref={textareaRef} {...props} />;
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    React.useLayoutEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'inherit';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [props.value]);
+    return <textarea ref={textareaRef} {...props} />;
 };
 
-// 수정 모드와 보기 모드를 전환하는 컴포넌트
+// 수정 가능한 필드 컴포넌트
 interface EditableFieldProps {
-  isEditing: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  multiline?: boolean;
-  className?: string;
-  textClassName?: string;
+    isEditing: boolean;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    className?: string;
+    textClassName?: string;
 }
-
-const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, multiline = true, className = '', textClassName = '' }) => {
-  if (isEditing) {
-    const commonProps = {
-      value,
-      onChange,
-      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
-    };
-    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
-  }
-  // 줄바꿈 문자를 <br> 태그로 변환하여 P 태그 안에서 렌더링
-  return (
-    <p 
-      className={textClassName}
-      dangerouslySetInnerHTML={{ __html: value.replace(/\n/g, '<br />') }}
-    />
-  );
+const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, className = '', textClassName = '' }) => {
+    if (isEditing) {
+        return <AutoGrowTextarea value={value} onChange={onChange} className={`w-full p-2 rounded-md bg-slate-50 border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`} />;
+    }
+    // 'whitespace-pre-wrap' 클래스로 줄바꿈과 공백을 그대로 표시
+    return <p className={`whitespace-pre-wrap ${textClassName}`}>{value}</p>;
 };
 
-
-// 메인 UDL 지도안 표시 컴포넌트 (표 형식으로 변경됨)
+// UDL 지도안 표시 메인 컴포넌트
 interface UDLDisplayProps {
-  plan: GeneratedLessonPlan;
-  isEditing: boolean;
-  onPlanChange: (updatedPlan: GeneratedLessonPlan) => void;
+    plan: GeneratedLessonPlan;
+    isEditing: boolean;
+    onPlanChange: (updatedPlan: GeneratedLessonPlan) => void;
 }
 
 const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }) => {
-
-    // FIX 1: Add a guard clause to handle cases where 'plan' data is not yet available.
-    // 지도안(plan) 데이터가 로드되기 전에 컴포넌트가 렌더링되는 것을 방지합니다.
-    if (!plan) {
-        return (
-            <div className="p-6 text-center text-slate-500">
-                지도안 데이터를 불러오는 중입니다...
-            </div>
-        );
+    
+    if (!plan || !plan.udlPrinciples) {
+        return <div className="text-center p-8 bg-white rounded-lg shadow-md">지도안 데이터를 불러오는 중입니다...</div>;
     }
-
-    // 데이터 변경을 위한 헬퍼 함수
-    const handleFieldChange = (field: keyof GeneratedLessonPlan, value: any) => {
-        onPlanChange({ ...plan, [field]: value });
+    
+    // 세분화된 목표 객체 변경 핸들러
+    const handleObjectiveChange = (field: keyof DetailedObjectives, value: string) => {
+        const updatedObjectives = { ...plan.detailedObjectives, [field]: value };
+        onPlanChange({ ...plan, detailedObjectives: updatedObjectives });
     };
 
-    const handlePrincipleStrategyChange = (principleIndex: number, strategyIndex: number, value: string) => {
-        const newPrinciples = JSON.parse(JSON.stringify(plan.udlPrinciples));
-        newPrinciples[principleIndex].strategies[strategyIndex].example = value;
-        handleFieldChange('udlPrinciples', newPrinciples);
+    // UDL 원칙 내 전략 변경 핸들러
+    const handleStrategyChange = (principleIndex: number, strategyIndex: number, field: keyof UDLStrategy, value: string) => {
+        const newPrinciples = JSON.parse(JSON.stringify(plan.udlPrinciples)); // Deep copy to avoid mutation issues
+        if(newPrinciples[principleIndex] && newPrinciples[principleIndex].strategies[strategyIndex]) {
+            newPrinciples[principleIndex].strategies[strategyIndex][field] = value;
+            onPlanChange({ ...plan, udlPrinciples: newPrinciples });
+        }
     };
-
-    // 각 원리에 맞는 전략들을 찾아서 분리 (없을 경우 빈 배열)
-    const engagementStrategies = plan.udlPrinciples.find(p => p.principle.includes("참여"))?.strategies || [];
-    const representationStrategies = plan.udlPrinciples.find(p => p.principle.includes("표현"))?.strategies || [];
-    const actionStrategies = plan.udlPrinciples.find(p => p.principle.includes("실행"))?.strategies || [];
-
+    
+    // 4단계를 위한 전략 분리
     const engagementPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("참여"));
     const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표현"));
     const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행"));
 
-  return (
-    <div className="p-4 sm:p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
-      <div className="overflow-x-auto">
-        <table className="udl-table w-full min-w-[800px]">
-          {/* 테이블 헤더 */}
-          <thead>
-            <tr className="bg-slate-50">
-              <th colSpan={2}>교육과정 성취기준</th>
-              <th>전체</th>
-              <th>일부</th>
-              <th>소수</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* 1단계 */}
-            <tr>
-              <td rowSpan={2} className="text-center font-semibold">1단계<br />목표 확인 및<br />설정하기</td>
-              <td><EditableField isEditing={isEditing} value={plan.achievementStandard || ''} onChange={(e) => handleFieldChange('achievementStandard', e.target.value)} /></td>
-              <td><EditableField isEditing={isEditing} value={plan.goalForAll || ''} onChange={(e) => handleFieldChange('goalForAll', e.target.value)} /></td>
-              <td><EditableField isEditing={isEditing} value={plan.goalForSome || ''} onChange={(e) => handleFieldChange('goalForSome', e.target.value)} /></td>
-              <td><EditableField isEditing={isEditing} value={plan.goalForFew || ''} onChange={(e) => handleFieldChange('goalForFew', e.target.value)} /></td>
-            </tr>
-            <tr>
-              <td colSpan={4}>
-                <p className="font-bold text-center mb-2">목표</p>
-                {/* FIX 2: Add a fallback to prevent passing undefined to the 'value' prop. */}
-                <EditableField isEditing={isEditing} value={plan.learningObjectives || ''} onChange={(e) => handleFieldChange('learningObjectives', e.target.value)} />
-              </td>
-            </tr>
-            {/* 2단계 */}
-            <tr>
-              <td rowSpan={2} className="text-center font-semibold">2단계<br />상황 분석하기</td>
-              <td className="font-bold">상황 분석하기</td>
-              <td colSpan={3}><EditableField isEditing={isEditing} value={plan.contextAnalysis || ''} onChange={(e) => handleFieldChange('contextAnalysis', e.target.value)} /></td>
-            </tr>
-            <tr>
-              <td className="font-bold">학습자 분석하기</td>
-              <td colSpan={3}><EditableField isEditing={isEditing} value={plan.learnerAnalysis || ''} onChange={(e) => handleFieldChange('learnerAnalysis', e.target.value)} /></td>
-            </tr>
-            {/* 3단계 */}
-            <tr>
-              <td className="text-center font-semibold" rowSpan={plan.udlPrinciples.length + 1}>3단계<br/>보편적 학습설계<br/>원리 적용하기</td>
-              <td className="font-bold" colSpan={4}>세가지 원리</td>
-            </tr>
-            {plan.udlPrinciples.map((principle, index) => (
-              <tr key={index}>
-                <td colSpan={4}>
-                   <p className="font-bold">{principle.principle}</p>
-                   {/* FIX 3: Add a fallback to prevent passing undefined to the 'value' prop. */}
-                   <EditableField isEditing={isEditing} value={principle.description || ''} onChange={(e) => {
-                       const newPrinciples = [...plan.udlPrinciples];
-                       newPrinciples[index] = { ...newPrinciples[index], description: e.target.value };
-                       handleFieldChange('udlPrinciples', newPrinciples);
-                   }} />
-                </td>
-              </tr>
-            ))}
-            {/* 4단계 */}
-            <tr>
-              <td className="text-center font-semibold">4단계<br />보편적 학습설계<br />수업 구상하기</td>
-              <td colSpan={4}>
-                <table className="w-full inner-table">
-                  <thead>
-                    <tr>
-                      <th className="font-bold">학습 참여 수단</th>
-                      <th className="font-bold">표상 수단</th>
-                      <th className="font-bold">행동과 표현 수단</th>
+    const engagementStrategies = engagementPrincipleIndex > -1 ? plan.udlPrinciples[engagementPrincipleIndex].strategies : [];
+    const representationStrategies = representationPrincipleIndex > -1 ? plan.udlPrinciples[representationPrincipleIndex].strategies : [];
+    const actionStrategies = actionPrincipleIndex > -1 ? plan.udlPrinciples[actionPrincipleIndex].strategies : [];
+
+    return (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
+            <table className="udl-table w-full border-collapse">
+                <colgroup>
+                    <col style={{ width: '12%' }} />
+                    <col style={{ width: '23%' }} />
+                    <col style={{ width: '21.6%' }} />
+                    <col style={{ width: '21.6%' }} />
+                    <col style={{ width: '21.6%' }} />
+                </colgroup>
+                <thead>
+                    <tr className="bg-slate-100">
+                        <th className="p-2 border border-slate-300 font-semibold">단계</th>
+                        <th className="p-2 border border-slate-300 font-semibold">교육과정 성취기준</th>
+                        <th className="p-2 border border-slate-300 font-semibold">전체</th>
+                        <th className="p-2 border border-slate-300 font-semibold">일부</th>
+                        <th className="p-2 border border-slate-300 font-semibold">소수</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                </thead>
+                <tbody>
+                    {/* 1단계 */}
                     <tr>
-                      <td className="align-top">
-                        {engagementStrategies.map((strat, index) => (
-                           <div key={index} className="mb-2"><EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handlePrincipleStrategyChange(engagementPrincipleIndex, index, e.target.value)} /></div>
-                        ))}
-                      </td>
-                      <td className="align-top">
-                         {representationStrategies.map((strat, index) => (
-                           <div key={index} className="mb-2"><EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handlePrincipleStrategyChange(representationPrincipleIndex, index, e.target.value)} /></div>
-                        ))}
-                      </td>
-                      <td className="align-top">
-                        {actionStrategies.map((strat, index) => (
-                           <div key={index} className="mb-2"><EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handlePrincipleStrategyChange(actionPrincipleIndex, index, e.target.value)} /></div>
-                        ))}
-                      </td>
+                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">1단계<br />목표 확인 및<br />설정하기</td>
+                        <td className="align-top p-2 border border-slate-300">
+                            <EditableField
+                                isEditing={isEditing}
+                                value={plan.achievementStandard || ''}
+                                onChange={(e) => onPlanChange({ ...plan, achievementStandard: e.target.value })}
+                                textClassName="text-sm"
+                            />
+                        </td>
+                        <td className="align-top p-2 border border-slate-300">
+                            <EditableField
+                                isEditing={isEditing}
+                                value={plan.detailedObjectives?.overall || ''}
+                                onChange={(e) => handleObjectiveChange('overall', e.target.value)}
+                                textClassName="text-sm"
+                            />
+                        </td>
+                        <td className="align-top p-2 border border-slate-300">
+                             <EditableField
+                                isEditing={isEditing}
+                                value={plan.detailedObjectives?.some || ''}
+                                onChange={(e) => handleObjectiveChange('some', e.target.value)}
+                                textClassName="text-sm"
+                            />
+                        </td>
+                        <td className="align-top p-2 border border-slate-300">
+                             <EditableField
+                                isEditing={isEditing}
+                                value={plan.detailedObjectives?.few || ''}
+                                onChange={(e) => handleObjectiveChange('few', e.target.value)}
+                                textClassName="text-sm"
+                            />
+                        </td>
                     </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+                    {/* 2단계 */}
+                    <tr>
+                        <td rowSpan={2} className="font-semibold align-middle text-center p-2 border border-slate-300">2단계<br />상황 분석하기</td>
+                        <td className="font-bold p-2 border border-slate-300">상황 분석하기</td>
+                        <td colSpan={3} className="p-2 border border-slate-300">
+                            <EditableField 
+                                isEditing={isEditing} 
+                                value={plan.contextAnalysis || ''} 
+                                onChange={(e) => onPlanChange({ ...plan, contextAnalysis: e.target.value })} 
+                                textClassName="text-sm"
+                            />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td className="font-bold p-2 border border-slate-300">학습자 분석하기</td>
+                        <td colSpan={3} className="p-2 border border-slate-300">
+                            <EditableField 
+                                isEditing={isEditing} 
+                                value={plan.learnerAnalysis || ''} 
+                                onChange={(e) => onPlanChange({ ...plan, learnerAnalysis: e.target.value })}
+                                textClassName="text-sm"
+                            />
+                        </td>
+                    </tr>
+                    {/* 3단계 */}
+                    <tr>
+                         <td className="font-semibold align-middle text-center p-2 border border-slate-300" rowSpan={plan.udlPrinciples.length + 1}>3단계<br/>보편적 학습설계<br/>원리 적용하기</td>
+                         <td className="font-bold p-2 border border-slate-300" colSpan={4}>세가지 원리</td>
+                    </tr>
+                    {plan.udlPrinciples.map((principle, pIndex) => (
+                        <tr key={pIndex}>
+                            <td colSpan={4} className="p-2 border border-slate-300">
+                               <p className="font-bold">{principle.principle}</p>
+                               <ul className="list-disc list-inside pl-4">
+                               {principle.strategies.map((strat, sIndex) => (
+                                   <li key={sIndex} className="text-sm mt-1">
+                                       <strong>{strat.strategy}: </strong>
+                                       <EditableField
+                                           isEditing={isEditing}
+                                           value={strat.example}
+                                           onChange={(e) => handleStrategyChange(pIndex, sIndex, 'example', e.target.value)}
+                                           textClassName="inline"
+                                       />
+                                   </li>
+                               ))}
+                               </ul>
+                            </td>
+                        </tr>
+                    ))}
+                    {/* 4단계 */}
+                     <tr>
+                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">4단계<br />보편적 학습설계<br />수업 구상하기</td>
+                        <td colSpan={4} className="p-0 border border-slate-300">
+                           <table className="w-full inner-table">
+                               <thead>
+                                   <tr>
+                                       <th className="font-bold p-2 border-b border-r border-slate-300 w-1/3">학습 참여 수단</th>
+                                       <th className="font-bold p-2 border-b border-r border-slate-300 w-1/3">표상 수단</th>
+                                       <th className="font-bold p-2 border-b border-slate-300 w-1/3">행동과 표현 수단</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   <tr>
+                                       <td className="align-top p-2 border-r border-slate-300">
+                                           {engagementStrategies.map((strat, index) => (
+                                               <div key={index} className="mb-2 text-sm">
+                                                   <EditableField 
+                                                      isEditing={isEditing} 
+                                                      value={strat.example} 
+                                                      onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'example', e.target.value)} 
+                                                   />
+                                               </div>
+                                           ))}
+                                       </td>
+                                       <td className="align-top p-2 border-r border-slate-300">
+                                           {representationStrategies.map((strat, index) => (
+                                               <div key={index} className="mb-2 text-sm">
+                                                   <EditableField 
+                                                      isEditing={isEditing} 
+                                                      value={strat.example} 
+                                                      onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'example', e.target.value)} 
+                                                   />
+                                               </div>
+                                           ))}
+                                       </td>
+                                       <td className="align-top p-2">
+                                           {actionStrategies.map((strat, index) => (
+                                               <div key={index} className="mb-2 text-sm">
+                                                   <EditableField 
+                                                      isEditing={isEditing} 
+                                                      value={strat.example} 
+                                                      onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'example', e.target.value)} 
+                                                   />
+                                               </div>
+                                           ))}
+                                       </td>
+                                   </tr>
+                               </tbody>
+                           </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
 export default UDLDisplay;
-
