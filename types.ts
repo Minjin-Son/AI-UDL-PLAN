@@ -140,3 +140,7 @@ export interface GeneratedLessonPlan {
     methods: string[];
   };
 }
+export interface GeneratedLessonPlan {
+  id: string; // 각 지도안을 구별하기 위한 고유 ID
+  //...
+}
