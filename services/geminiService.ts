@@ -58,7 +58,7 @@ const responseSchema = {
             required: ["title", "methods"]
         }
     },
-    required: ["lessonTitle", "subject", "gradeLevel", "learningObjectives", "udlPrinciples", "assessment"]
+    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
 };
 
 
@@ -66,8 +66,8 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
     const { gradeLevel, semester, subject, topic, duration, objectives, unitName, achievementStandards, specialNeeds, studentCharacteristics } = inputs;
 
     const prompt = `
-      당신은 보편적 학습 설계(UDL)를 전문으로 하는 수업 설계 전문가입니다.
-      당신의 임무는 사용자의 입력을 바탕으로 포괄적인 지도안을 만드는 것입니다. 이 지도안은 UDL의 세 가지 핵심 원칙을 중심으로 구성되어야 합니다.
+      당신은 2022 개정 교육과정과 보편적 학습 설계(UDL)를 전문으로 하는 수업 설계 전문가입니다.
+      당신의 임무는 사용자의 입력을 바탕으로, '보편적 학습 설계 한국 틀' 형식에 맞는 포괄적인 지도안을 만드는 것입니다.
 
       **사용자 수업 정보:**
       - **학년:** ${gradeLevel} (${semester})
@@ -78,20 +78,16 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
       - **수업 시간:** ${duration}
       - **학습 목표:** ${objectives}
       - **고려할 특수교육대상 학생 유형:** ${specialNeeds || '해당 없음'}
-      - **특수교육대상 학생의 구체적인 특성:** ${studentCharacteristics || '구체적인 정보 없음. 일반적인 UDL 원칙을 적용해 주세요.'}
+      - **특수교육대상 학생의 구체적인 특성:** ${studentCharacteristics || '구체적인 정보 없음. '}
 
-      **지침:**
-      1.  명시된 학년, 과목, 성취기준에 적합하고 흥미로운 실용적인 지도안을 만들어 주세요.
-      2.  세 가지 UDL 원칙(참여, 표현, 실행 및 표현) 각각에 대해 세 가지 뚜렷하고 실행 가능한 전략을 제공해 주세요.
-      3.  각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다. **특히, '특수교육대상 학생의 구체적인 특성'에 제공된 정보를 최우선으로 고려하여, 해당 학생의 학습을 실질적으로 지원할 수 있는 매우 구체적이고 개인화된 방안을 예시에 포함시켜 주세요.** 만약 구체적인 특성 정보가 없다면, '고려할 학생 유형'을 참고하여 일반적인 지원 방안을 제시해 주세요.
-      4.  학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
-      5.  'lessonTitle'은 주제와 관련하여 창의적으로 작성해 주세요.
-      6.  출력의 'learningObjectives'는 사용자가 제공한 것과 동일해야 합니다.
-      7.  'principle' 필드는 "I. 다양한 참여 수단 제공", "II. 다양한 표현 수단 제공", 또는 "III. 다양한 실행 및 표현 수단 제공" 중 하나여야 합니다.
-      8.  각 원칙의 'description' 필드는 그 목표에 대한 간결한 한 문장 설명이어야 합니다 (예: '학습의 '왜'').
-      9.  'guideline'은 구체적인 UDL 체크포인트여야 합니다 (예: '7.1 개인의 선택권과 자율성 최적화').
-      10. 제공된 스키마를 준수하는 JSON 객체 형식으로 응답을 생성해 주세요. 또한, 전체 JSON 응답은 한국어로 작성되어야 합니다.
-    `;
+       **지도안 생성 지침:**
+      1.  **1단계 - 목표 세분화:** 사용자가 입력한 '핵심 학습 목표'를 바탕으로, 모든 학생(overall), 일부 학생(some), 소수 학생(few)을 위한 세분화된 목표를 'detailedObjectives' 객체에 작성해주세요.
+      2.  **2단계 - 분석:** 2022 개정 교육과정에 근거하여, '상황 분석(contextAnalysis)'과 '학습자 분석(learnerAnalysis)' 항목을 각각 2~3 문장으로 구체적으로 작성해주세요. 상황 분석은 수업 환경과 맥락을, 학습자 분석은 학생들의 발달 특성을 고려해야 합니다.
+      3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표현, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
+      4.  **평가 계획:** 학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
+      5.  **기타:** 'lessonTitle'은 주제와 관련하여 창의적으로 작성하고, 'subject'와 'gradeLevel'은 입력받은 값을 그대로 사용해주세요.
+      6.  **출력 형식:** 제공된 스키마를 준수하는 JSON 객체 형식으로, 모든 내용을 한국어로 작성해주세요.
+    `;
 
     try {
         const response = await ai.models.generateContent({
