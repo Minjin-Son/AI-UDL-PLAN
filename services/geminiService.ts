@@ -4,12 +4,25 @@ import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlE
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const responseSchema = {
-    type: Type.OBJECT,
-    properties: {
-        lessonTitle: { type: Type.STRING },
-        subject: { type: Type.STRING },
-        gradeLevel: { type: Type.STRING },
-        learningObjectives: { type: Type.STRING },
+    type: Type.OBJECT,
+    properties: {
+        lessonTitle: { type: Type.STRING },
+        subject: { type: Type.STRING },
+        gradeLevel: { type: Type.STRING },
+
+        // ✅ '전체/일부/소수' 목표를 담을 객체를 추가합니다.
+        detailedObjectives: {
+            type: Type.OBJECT,
+            properties: {
+                overall: { type: Type.STRING },
+                some: { type: Type.STRING },
+                few: { type: Type.STRING },
+            },
+            required: ["overall", "some", "few"]
+        },
+        contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
+        learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
+
         udlPrinciples: {
             type: Type.ARRAY,
             items: {
