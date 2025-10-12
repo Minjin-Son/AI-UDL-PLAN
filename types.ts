@@ -123,18 +123,20 @@ export interface ProcessEvaluationWorksheet {
 }
 
 export interface GeneratedLessonPlan {
-    id?: string;
-    lessonTitle: string;
-    subject: string;
-    gradeLevel: string;
-    learningObjectives: string;
-    udlPrinciples: UDLPrincipleSection[];
-    assessment: {
-        title: string;
-        methods: string[];
-    };
-    tablePlan?: TableLessonPlan;
-    worksheet?: Worksheet;
-    udlEvaluation?: UdlEvaluationPlan;
-    processEvaluationWorksheet?: ProcessEvaluationWorksheet;
+  // --- 새로운 표를 위한 필드들 ---
+  achievementStandard?: string;
+  goalForAll?: string;
+  goalForSome?: string;
+  goalForFew?: string;
+  contextAnalysis?: string;
+  learnerAnalysis?: string;
+  // ------------------------------
+
+  // --- 기존에 사용하던 필드들 ---
+  learningObjectives: string;
+  udlPrinciples: UDLPrincipleSection[];
+  assessment: {
+    title: string;
+    methods: string[];
+  };
 }
