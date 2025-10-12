@@ -1,11 +1,7 @@
 export const GRADE_LEVELS: string[] = [
-  '유치원',
   '초등학교 (1-2학년)',
   '초등학교 (3-4학년)',
   '초등학교 (5-6학년)',
-  '중학교 (1-3학년)',
-  '고등학교 (1-3학년)',
-  '대학교',
 ];
 
 export const SEMESTERS: string[] = [
