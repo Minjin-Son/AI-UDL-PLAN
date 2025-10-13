@@ -36,9 +36,9 @@ const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChang
     return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
   }
   
-  // ✅ CSS의 'whitespace-pre-wrap' 클래스를 사용하여, 텍스트에 포함된 줄바꿈 문자(\n)를
-  // 화면에 그대로 표시하도록 개선합니다.
-  return <p className={`whitespace-pre-wrap ${textClassName}`}>{value}</p>;
+  // ✅ AI가 생성한 텍스트에서 글머리 기호(•)를 찾아 줄바꿈 문자로 바꿔줍니다.
+  const formattedValue = value.replace(/• /g, '\n• ');
+  return <p className={`whitespace-pre-wrap ${textClassName}`}>{formattedValue}</p>;
 };
 
 
