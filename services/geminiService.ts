@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet, DetailedObjectives } from '../types';
+import { achievementStandardsDB } from '../data/achievementStandards';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -342,33 +343,44 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
 };
 
 const achievementStandardsResponseSchema = {
-    type: Type.OBJECT,
-    properties: {
-        standards: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "Suggested achievement standards as an array of strings."
-        }
-    },
-    required: ["standards"]
+    type: Type.OBJECT,
+    properties: {
+        standards: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "가장 관련성이 높은 성취기준 2~4개를 담은 배열"
+        }
+    },
+    required: ["standards"]
 };
 
 export const generateAchievementStandards = async (gradeLevel: string, semester: string, subject: string, unitName: string): Promise<string[]> => {
-    const prompt = `
-        당신은 한국 교육과정 전문가이며, 특히 2022 개정 교육과정에 대한 깊은 지식을 가지고 있습니다.
-        아래 정보를 바탕으로, 해당 단원과 가장 관련성이 높은 '2022 개정 교육과정'의 공식적인 성취기준을 2~4개 추천해 주세요.
-        성취기준 코드를 포함하여 정확한 전체 텍스트를 제공해야 합니다. (예: [6과04-02]...)
+    
+    // ✅ 1. 데이터베이스에서 해당 과목, 학년의 성취기준 목록을 찾습니다.
+    const relevantStandardsList = achievementStandardsDB[subject]?.[gradeLevel] || [];
 
-        - 학년군: ${gradeLevel} (${semester})
+    // ✅ 2. 만약 데이터베이스에 해당 정보가 없으면, 빈 목록을 반환하고 함수를 종료합니다.
+    if (relevantStandardsList.length === 0) {
+        console.warn(`성취기준 데이터베이스에서 '${gradeLevel}' '${subject}'에 대한 정보를 찾을 수 없습니다.`);
+        return [`'${subject}' 과목의 성취기준 데이터가 없습니다. data/achievementStandards.ts 파일을 확인해주세요.`];
+    }
+    
+    // ✅ 3. AI에게 "기억하지 말고, 내가 주는 이 목록 안에서 골라줘" 라고 명확하게 지시합니다.
+    const prompt = `
+        당신은 2022 개정 교육과정 전문가입니다.
+        아래에 제공된 **'공식 성취기준 목록'** 중에서, 주어진 **'단원명'**과 가장 관련성이 높은 것을 2~4개만 골라주세요.
+
+        **[공식 성취기준 목록]**
+        ${relevantStandardsList.join('\n')}
+
+        **[사용자 입력 정보]**
+        - 학년: ${gradeLevel}
         - 과목: ${subject}
         - 단원명: ${unitName}
 
-        **중요 지침:**
-        1.  반드시 **2022 개정 교육과정**에 명시된 성취기준을 찾아야 합니다. 이전 교육과정(2015 개정 등)의 내용은 포함하지 마세요.
-        2.  제시된 학년군과 과목에 맞는 정확한 성취기준을 제공해야 합니다.
-        3.  성취기준의 코드와 내용을 빠짐없이 정확하게 인용해 주세요.
-
-        제공된 스키마를 준수하는 JSON 객체로 응답을 반환해 주세요. 전체 응답은 한국어로 작성되어야 합니다.
+        **지침:**
+        - 반드시 위에 제공된 **[공식 성취기준 목록]** 안에서만 선택해야 합니다. 목록에 없는 내용을 절대로 만들어서는 안 됩니다.
+        - 목록에서 가장 관련성이 높다고 생각되는 2~4개의 성취기준 전체 텍스트를 골라 JSON 형식으로 응답해주세요.
     `;
 
     try {
@@ -378,7 +390,7 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
             config: {
                 responseMimeType: "application/json",
                 responseSchema: achievementStandardsResponseSchema,
-                temperature: 0.5,
+                temperature: 0.3, // 더 정확한 선택을 위해 온도를 낮춤
             },
         });
         
@@ -386,14 +398,14 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
         const parsedResponse = JSON.parse(jsonText) as { standards: string[] };
 
         if (!parsedResponse.standards || !Array.isArray(parsedResponse.standards)) {
-            throw new Error("Invalid response format from AI: 'standards' array not found.");
+            throw new Error("AI 응답 형식이 올바르지 않습니다: 'standards' 배열을 찾을 수 없습니다.");
         }
 
         return parsedResponse.standards;
 
     } catch (error) {
-        console.error("Error generating achievement standards:", error);
-        throw new Error("AI로부터 성취기준을 생성하는 데 실패했습니다. 응답이 유효한 JSON이 아닐 수 있습니다.");
+        console.error("성취기준 추천 생성 중 오류:", error);
+        throw new Error("AI로부터 성취기준을 추천받는 데 실패했습니다.");
     }
 };
 

@@ -12,20 +12,17 @@ export const SEMESTERS: string[] = [
 export const SUBJECTS: string[] = [
   '국어',
   '수학',
+  '사회',
+  '과학',
+  '영어',
+  '음악',
+  '미술',
+  '체육',
+  '실과',
+  '도덕',
   '바른 생활',
   '슬기로운 생활',
   '즐거운 생활',
-  '안전한 생활',
-  '통합교과',
-  '사회',
-  '도덕',
-  '과학',
-  '실과',
-  '체육',
-  '음악',
-  '미술',
-  '영어',
-  '창의적 체험활동',
 ];
 
 export const SPECIAL_NEEDS_SUGGESTIONS: string[] = [
