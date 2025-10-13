@@ -345,9 +345,9 @@ const App: React.FC = () => {
       <div className="no-print">
         <Header />
       </div>
-      <main className="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
-          <div className="no-print lg:col-span-3">
+      <main className="flex-grow container mx-auto p-4 md:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="no-print lg:col-span-2">
             <FormPanel
               lessonInputs={lessonInputs}
               handleInputChange={handleInputChange}
@@ -371,7 +371,7 @@ const App: React.FC = () => {
               objectiveError={objectiveError}
             />
           </div>
-          <div className="flex flex-col gap-8 lg:col-span-7">
+          <div className="flex flex-col gap-8 lg:col-span-3">
             <div className="no-print">
                 <SavedPlansPanel 
                   plans={savedPlans}
