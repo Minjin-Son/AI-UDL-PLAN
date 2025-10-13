@@ -5,7 +5,7 @@ import UDLDisplay from './UDLDisplay';
 import WorksheetDisplay from './WorksheetDisplay';
 import UdlEvaluationDisplay from './UdlEvaluationDisplay';
 import ProcessEvaluationDisplay from './ProcessEvaluationDisplay';
-import { exportPlan } from '../services/exportService';
+import { exportPlanAsWord } from '../services/exportService';
 
 interface DisplayPanelProps {
   isLoading: boolean;
@@ -147,7 +147,7 @@ const PlanDisplay: React.FC<{
   }
 
   const handleWordExport = () => {
-      exportPlan(plan, view);
+      exportPlanAsWord(plan, view);
       setIsExportMenuOpen(false);
   }
 
