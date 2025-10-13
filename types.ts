@@ -62,24 +62,6 @@ export interface TableLessonPlan {
     };
 }
 
-export interface WorksheetActivity {
-    title: string;
-    description: string;
-    content: string;
-}
-
-export interface WorksheetLevel {
-    levelName: string;
-    title: string;
-    activities: WorksheetActivity[];
-}
-
-export interface Worksheet {
-    title: string;
-    description: string;
-    levels: WorksheetLevel[];
-}
-
 export interface EvaluationTaskLevel {
     description: string;
     criteria: string;
@@ -134,16 +116,21 @@ export interface DetailedObjectives {
   few: string;     // 소수 목표
 }
 
-// AI가 생성하는 최종 지도안의 전체 구조 (정리된 버전)
+// ✅ 최종 버전의 GeneratedLessonPlan 설계도
 export interface GeneratedLessonPlan {
   id: string;
   achievementStandard: string;
+  detailedObjectives: DetailedObjectives;
   contextAnalysis: string;
   learnerAnalysis: string;
-  
-  // 기존 learningObjectives를 대체하는 세분화된 목표 객체
-  detailedObjectives: DetailedObjectives; 
-
   udlPrinciples: UDLPrincipleSection[];
-  assessment: AssessmentSection;
+  assessment: {
+    title: string;
+    methods: string[];
+  };
+  // ✅ 여기에 빠져있던 부가 기능들을 다시 추가했습니다.
+  // '?'는 이 기능들이 아직 생성되지 않았을 수도 있다는 의미입니다.
+  tablePlan?: TableLessonPlan;
+  udlEvaluation?: UdlEvaluationPlan;
+  processEvaluationWorksheet?: ProcessEvaluationWorksheet;
 }

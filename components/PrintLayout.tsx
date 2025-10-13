@@ -2,7 +2,6 @@ import React from 'react';
 import { GeneratedLessonPlan } from '../types';
 import UDLDisplay from './UDLDisplay';
 import TableDisplay from './TableDisplay';
-import WorksheetDisplay from './WorksheetDisplay';
 import UdlEvaluationDisplay from './UdlEvaluationDisplay';
 import ProcessEvaluationDisplay from './ProcessEvaluationDisplay';
 
@@ -42,11 +41,6 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
             </PrintSection>
         )}
 
-        {plan.worksheet && (
-            <PrintSection title="수준별 활동지">
-                <WorksheetDisplay plan={plan.worksheet} isEditing={false} onPlanChange={dummyOnPlanChange as any} />
-            </PrintSection>
-        )}
 
         {plan.udlEvaluation && (
             <PrintSection title="UDL 평가 계획">
