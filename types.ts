@@ -142,9 +142,9 @@ export interface GeneratedLessonPlan {
     title: string;
     methods: string[];
   };
-  tablePlan: TableLessonPlan;
-  worksheet: Worksheet; // ✅ 활동지 기능 다시 포함
-  udlEvaluation: UdlEvaluationPlan;
-  processEvaluationWorksheet: ProcessEvaluationWorksheet;
+  tablePlan?: TableLessonPlan;
+  worksheet?: Worksheet; // ✅ 활동지 기능 다시 포함
+  udlEvaluation?: UdlEvaluationPlan;
+  processEvaluationWorksheet?: ProcessEvaluationWorksheet;
 }
 
