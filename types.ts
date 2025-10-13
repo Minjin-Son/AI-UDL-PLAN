@@ -136,6 +136,14 @@ export interface DetailedObjectives {
 
 // AI가 생성하는 최종 지도안의 전체 구조 (정리된 버전)
 export interface GeneratedLessonPlan {
+  processEvaluationWorksheet: any;
+  udlEvaluation: any;
+  worksheet: any;
+  tablePlan: any;
+  subject: any;
+  gradeLevel: any;
+  learningObjectives: string;
+  lessonTitle: any;
   id: string;
   achievementStandard: string;
   contextAnalysis: string;
