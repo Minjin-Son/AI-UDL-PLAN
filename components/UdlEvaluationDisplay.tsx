@@ -18,24 +18,27 @@ const AutoGrowTextarea: React.FC<AutoGrowTextareaProps> = (props) => {
 };
 
 interface EditableFieldProps {
-  isEditing: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  multiline?: boolean;
-  className?: string;
-  textClassName?: string;
+  isEditing: boolean;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  multiline?: boolean;
+  className?: string;
+  textClassName?: string;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, multiline = true, className = '', textClassName = '' }) => {
-  if (isEditing) {
-    const commonProps = {
-      value,
-      onChange,
-      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
-    };
-    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
-  }
-  return <div className={textClassName}>{value}</div>;
+  if (isEditing) {
+    const commonProps = {
+      value,
+      onChange,
+      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
+    };
+    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
+  }
+  
+  // ✅ CSS의 'whitespace-pre-wrap' 클래스를 사용하여, 텍스트에 포함된 줄바꿈 문자(\n)를
+  // 화면에 그대로 표시하도록 개선합니다.
+  return <p className={`whitespace-pre-wrap ${textClassName}`}>{value}</p>;
 };
 
 
