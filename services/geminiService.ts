@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, UdlEvaluationPlan, ProcessEvaluationWorksheet, DetailedObjectives } from '../types';
+import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet, DetailedObjectives } from '../types';
 import { achievementStandardsDB } from '../data/achievementStandards';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -462,6 +462,84 @@ export const generateLearningObjective = async (gradeLevel: string, semester: st
     } catch (error) {
         console.error("Error generating learning objective:", error);
         throw new Error("AI로부터 학습 목표를 생성하는 데 실패했습니다.");
+    }
+};
+
+const worksheetSchema = {
+    type: Type.OBJECT,
+    properties: {
+        title: { type: Type.STRING },
+        description: { type: Type.STRING },
+        levels: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    levelName: { type: Type.STRING, description: "'기본', '보충', 또는 '심화'" },
+                    title: { type: Type.STRING, description: "해당 수준의 활동 제목" },
+                    activities: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
+                                description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
+                                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" }
+                            },
+                            required: ["title", "description", "content"]
+                        }
+                    }
+                },
+                required: ["levelName", "title", "activities"]
+            }
+        }
+    },
+    required: ["title", "description", "levels"]
+};
+
+export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Worksheet> => {
+    const { gradeLevel, semester, subject, topic, objectives, studentCharacteristics } = inputs;
+
+    const prompt = `
+        당신은 UDL(보편적 학습 설계)과 수준별 수업에 전문성을 가진 교육 자료 개발 전문가입니다.
+        제공된 수업 정보를 바탕으로, 모든 학생이 참여할 수 있는 '수준별 활동지'를 생성해 주세요.
+
+        **수업 정보:**
+        - **학년:** ${gradeLevel} (${semester})
+        - **과목:** ${subject}
+        - **수업 주제:** ${topic}
+        - **학습 목표:** ${objectives}
+        - **고려할 학생 특성:** ${studentCharacteristics || '일반적인 학생 집단을 가정합니다.'}
+
+        **활동지 생성 지침:**
+        1.  **전체 구조:** 활동지는 '제목(title)', '설명(description)', 그리고 3개의 '수준(levels)' 배열로 구성됩니다.
+        2.  **수준별 구성:**
+            -   **'기본' 수준:** 학습에 어려움을 겪는 학생들을 위한 활동입니다. 핵심 개념을 확인하는 직접적인 질문, 용어 연결하기, 그림 보고 답하기 등 구조화되고 명확한 과제를 1~2개 제시해 주세요. **만약 학생 특성이 제공되었다면, 그 특성에 맞춰 활동을 조정해주세요. (예: 긴 글 읽기 어려움 -> 그림이나 도표 활용)**
+            -   **'보충' 수준:** 대부분의 학생들이 성취할 수 있는 활동입니다. 학습한 내용을 적용하고 분석하는 문제, 간단한 자료를 해석하고 자신의 생각을 쓰는 활동 등을 1~2개 제시해 주세요.
+            -   **'심화' 수준:** 도전적인 과제가 필요한 학생들을 위한 활동입니다. 비판적 사고, 창의적 문제 해결, 새로운 상황에 개념을 확장 적용하는 개방형 질문이나 프로젝트형 과제를 1~2개 제시해 주세요.
+        3.  **활동 내용:** 각 수준(level)에는 '활동 제목(title)'과 '활동 내용(activities)' 배열이 포함되어야 합니다. 각 'activity' 객체에는 소제목(title), 지시문(description), 그리고 구체적인 내용(content)이 있어야 합니다.
+        4.  **창의성:** 활동지 전체 제목(title)은 수업 주제와 관련하여 학생들이 흥미를 느낄 만하게 만들어 주세요.
+        5.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
+        6.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
+    `;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: worksheetSchema,
+                temperature: 0.8,
+            },
+        });
+        
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText) as Worksheet;
+
+    } catch (error) {
+        console.error("Error generating worksheet:", error);
+        throw new Error("AI로부터 활동지를 생성하는 데 실패했습니다.");
     }
 };
 
