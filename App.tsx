@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { LessonPlanInputs, GeneratedLessonPlan } from './types';
 import { GRADE_LEVELS, SUBJECTS, SEMESTERS } from './constants';
-import { generateUDLLessonPlan, generateTableLessonPlan, generateLessonTopics, generateAchievementStandards, generateLearningObjective, generateUdlEvaluationPlan, generateProcessEvaluationWorksheet } from './services/geminiService';
+import { generateUDLLessonPlan, generateTableLessonPlan, generateLessonTopics, generateAchievementStandards, generateLearningObjective, generateWorksheet, generateUdlEvaluationPlan, generateProcessEvaluationWorksheet } from './services/geminiService';
 import FormPanel from './components/FormPanel';
 import DisplayPanel from './components/DisplayPanel';
 import Header from './components/Header';
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [savedPlans, setSavedPlans] = useState<GeneratedLessonPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTableLoading, setIsTableLoading] = useState<boolean>(false);
+  const [isWorksheetLoading, setIsWorksheetLoading] = useState<boolean>(false);
   const [isUdlEvaluationLoading, setIsUdlEvaluationLoading] = useState<boolean>(false);
   const [isProcessEvaluationLoading, setIsProcessEvaluationLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -160,6 +161,31 @@ const App: React.FC = () => {
     }
   }, [generatedPlan, isTableLoading, lessonInputs]);
   
+  const handleGenerateWorksheet = useCallback(async () => {
+    if (!generatedPlan || isWorksheetLoading || generatedPlan.worksheet) {
+      return;
+    }
+
+    setIsWorksheetLoading(true);
+    setError(null);
+
+    try {
+      const worksheetResult = await generateWorksheet(lessonInputs);
+      const updatedPlan = { ...generatedPlan, worksheet: worksheetResult };
+      
+      setGeneratedPlan(updatedPlan);
+
+      if (updatedPlan.id) {
+        setSavedPlans(prevPlans => prevPlans.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : '활동지를 생성하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsWorksheetLoading(false);
+    }
+  }, [generatedPlan, isWorksheetLoading, lessonInputs]);
+
   const handleGenerateUdlEvaluation = useCallback(async () => {
     if (!generatedPlan || isUdlEvaluationLoading || generatedPlan.udlEvaluation) {
       return;
@@ -361,7 +387,9 @@ const App: React.FC = () => {
                 onSavePlan={handleSavePlan}
                 isSaved={!!generatedPlan?.id}
                 onGenerateTableView={handleGenerateTableView}
-                isTableLoading={isTableLoading}              
+                isTableLoading={isTableLoading}
+                onGenerateWorksheet={handleGenerateWorksheet}
+                isWorksheetLoading={isWorksheetLoading}
                 onGenerateUdlEvaluation={handleGenerateUdlEvaluation}
                 isUdlEvaluationLoading={isUdlEvaluationLoading}
                 onGenerateProcessEvaluation={handleGenerateProcessEvaluation}
