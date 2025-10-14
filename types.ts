@@ -1,3 +1,5 @@
+// ✅ 1. '개별 재료(부품)'들을 먼저 정의합니다.
+
 export interface LessonPlanInputs {
   gradeLevel: string;
   semester: string;
@@ -11,35 +13,37 @@ export interface LessonPlanInputs {
   studentCharacteristics?: string;
 }
 
+export interface DetailedObjectives {
+  overall: string;
+  some: string;
+  few: string;
+}
+
 export interface UDLStrategy {
-    guideline: string;
-    strategy: string;
-    example: string;
+  guideline: string;
+  strategy: string;
+  example: string;
 }
 
 export interface UDLPrincipleSection {
-    principle: string;
-    description: string;
-    strategies: UDLStrategy[];
+  principle: string;
+  description: string;
+  strategies: UDLStrategy[];
 }
 
-export interface LessonPlanTableRow {
-    phase: string;
-    duration: string;
-    process: string;
-    teacherActivities: string[];
-    studentActivities: string[];
-    materialsAndNotes: string[];
+export interface AssessmentSection {
+    title: string;
+    methods: string[];
 }
 
-export interface EvaluationCriterion {
-    content: string;
-    method: string;
-    excellent: string;
-    good: string;
-    needsImprovement: string;
+export interface MultimediaResource {
+  title: string;
+  platform: string;
+  search_query: string;
 }
 
+// ... (TableLessonPlan, Worksheet 등 다른 개별 타입들도 여기에 정의되어 있다고 가정합니다)
+// ... 만약 다른 타입들도 별도로 정의하셨다면, GeneratedLessonPlan보다 위에 있으면 됩니다.
 export interface TableLessonPlan {
     metadata: {
         lessonTitle: string;
@@ -50,108 +54,51 @@ export interface TableLessonPlan {
         duration: string;
         materials: string[];
     };
-    steps: LessonPlanTableRow[];
-    evaluationPlan: {
-        title: string;
-        criteria: EvaluationCriterion[];
-    };
-}
-
-export interface WorksheetActivity {
-    title: string;
-    description: string;
-    content: string;
-}
-
-export interface WorksheetLevel {
-    levelName: string;
-    title: string;
-    activities: WorksheetActivity[];
+    steps: any[]; // 간단하게 any로 처리하거나, LessonPlanTableRow 타입을 정의해야 합니다.
+    evaluationPlan: any;
 }
 
 export interface Worksheet {
     title: string;
     description: string;
-    levels: WorksheetLevel[];
+    levels: any[];
 }
-
-export interface EvaluationTaskLevel {
-    description: string;
-    criteria: string;
-}
-
-export interface EvaluationTask {
-    taskTitle: string;
-    taskDescription: string;
-    udlConnections: string[];
-    levels: {
-        advanced: EvaluationTaskLevel;
-        proficient: EvaluationTaskLevel;
-        basic: EvaluationTaskLevel;
-    };
-}
-
 export interface UdlEvaluationPlan {
     title: string;
     description: string;
-    tasks: EvaluationTask[];
+    tasks: any[];
 }
-
-export interface EvaluationItem {
-    criterion: string;
-    levels: {
-        excellent: string;
-        good: string;
-        needsImprovement: string;
-    };
-}
-
 export interface ProcessEvaluationWorksheet {
     title: string;
-    studentInfo: {
-        grade: string;
-        class: string;
-        number: string;
-        name: string;
-    };
+    studentInfo: any;
     overallDescription: string;
-    evaluationItems: EvaluationItem[];
-    overallFeedback: {
-        teacherComment: string;
-        studentReflection: string;
-    };
+    evaluationItems: any[];
+    overallFeedback: any;
 }
 
-export interface GeneratedLessonPlan {
-  processEvaluationWorksheet: any;
-  udlEvaluation: any;
-  worksheet: any;
-  tablePlan: any;
-  subject: any;
-  gradeLevel: any;
-  learningObjectives: string;
-  lessonTitle: any;
-  id: string;
-  achievementStandard: string;
-  contextAnalysis: string;
-  learnerAnalysis: string;
-  
-  // 기존 learningObjectives를 대체하는 세분화된 목표 객체
-  detailedObjectives: DetailedObjectives; 
 
+// ✅ 2. 모든 재료 준비가 끝난 후, '메인 요리'를 정의합니다.
+export interface GeneratedLessonPlan {
+  id?: string;
+  lessonTitle: string;
+  subject: string;
+  gradeLevel: string;
+  
+  // ✅ 이제 컴퓨터가 DetailedObjectives가 무엇인지 이미 알고 있습니다.
+  detailedObjectives: DetailedObjectives; 
   udlPrinciples: UDLPrincipleSection[];
   assessment: AssessmentSection;
-}
-export interface MultimediaResource {
-  title: string;
-  platform: string;
-  search_query: string;
-}
+  
+  contextAnalysis: string;
+  learnerAnalysis: string;
+  achievementStandard?: string;
+  
+  // ✅ 새로 추가한 멀티미디어 자료도 포함합니다.
+  multimedia_resources?: MultimediaResource[];
 
-export interface GeminiResponse {
-  lesson_plan: {
-    // 기존 지도안 타입...
-  };
-  multimedia_resources: MultimediaResource[];
-  image_generation_prompt: string;
+  // 다른 생성될 자료들 (기존 코드 유지)
+  tablePlan?: TableLessonPlan;
+  worksheet?: Worksheet;
+  udlEvaluation?: UdlEvaluationPlan;
+  processEvaluationWorksheet?: ProcessEvaluationWorksheet;
 }
