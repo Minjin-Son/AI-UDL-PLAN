@@ -6,7 +6,7 @@ import WorksheetDisplay from './WorksheetDisplay';
 import UdlEvaluationDisplay from './UdlEvaluationDisplay';
 import ProcessEvaluationDisplay from './ProcessEvaluationDisplay';
 import { exportPlanAsWord } from '../services/exportService';
-import MultimediaLinks from './MultimediaLinks'; // ✅ 1. 방금 만든 멀티미디어 링크 컴포넌트를 불러옵니다.
+import MultimediaLinks from './MultimediaLinks';
 
 interface DisplayPanelProps {
   isLoading: boolean;
