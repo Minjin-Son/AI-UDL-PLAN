@@ -155,3 +155,16 @@ export interface GeneratedLessonPlan {
   udlPrinciples: UDLPrincipleSection[];
   assessment: AssessmentSection;
 }
+export interface MultimediaResource {
+  title: string;
+  platform: string;
+  search_query: string;
+}
+
+export interface GeminiResponse {
+  lesson_plan: {
+    // 기존 지도안 타입...
+  };
+  multimedia_resources: MultimediaResource[];
+  image_generation_prompt: string;
+}
