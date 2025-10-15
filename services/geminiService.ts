@@ -8,22 +8,42 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const responseSchema = {
     type: Type.OBJECT,
     properties: {
-        lessonTitle: { type: Type.STRING },
-        subject: { type: Type.STRING },
-        gradeLevel: { type: Type.STRING },
-        detailedObjectives: {
-            type: Type.OBJECT,
-            properties: {
-                overall: { type: Type.STRING },
-                some: { type: Type.STRING },
-                few: { type: Type.STRING },
-            },
-            required: ["overall", "some", "few"]
+        lessonTitle: { 
+            type: Type.STRING,
+            description: "학생들의 흥미를 유발할 만한 창의적인 수업 주제"
         },
-        contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
-        learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
+        subject: { 
+            type: Type.STRING,
+            description: "사용자가 입력한 교과목 이름 (예: 과학, 수학)"
+        },
+        gradeLevel: { 
+            type: Type.STRING,
+            description: "사용자가 입력한 학년 정보 (예: 초등학교 (3-4학년))"
+        },
+        detailedObjectives: {
+            type: Type.OBJECT,
+            description: "모든 학생, 일부 학생, 소수 학생을 위한 세분화된 학습 목표",
+            properties: {
+                overall: { 
+                    type: Type.STRING,
+                    description: "모든 학생이 성취해야 할 핵심 목표"
+                },
+                some: { 
+                    type: Type.STRING,
+                    description: "일부 학생들이 추가적으로 성취할 수 있는 목표"
+                },
+                few: { 
+                    type: Type.STRING,
+                    description: "학습에 어려움이 있거나 빠른 학생들을 위한 개별화된 목표"
+                },
+            },
+            required: ["overall", "some", "few"]
+        },
+        contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
+        learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
         udlPrinciples: {
-            type: Type.ARRAY,
+            type: Type.ARRAY,
+            description: "UDL의 세 가지 원칙(참여, 표현, 실행)에 따른 구체적인 전략들",
             items: {
                 type: Type.OBJECT,
                 properties: {
