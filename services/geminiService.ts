@@ -3,31 +3,6 @@ import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlE
 import { achievementStandardsDB } from '../data/achievementStandards';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-// ✅ --- 1. '만능 재시도 로봇'을 만듭니다 ---
-// 이 로봇은 API 호출이 실패하면, 정해진 횟수만큼 자동으로 다시 시도해줍니다.
-const withRetry = async <T>(
-  apiCall: () => Promise<T>, // 로봇에게 시킬 실제 작업 (AI 호출)
-  maxRetries: number = 2,    // 최대 재시도 횟수 (기본 2번, 총 3번 시도)
-  delayMs: number = 1500     // 재시도 사이의 대기 시간 (1.5초)
-): Promise<T> => {
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      // 일단 작업을 시도합니다. 성공하면 바로 결과를 돌려줍니다.
-      return await apiCall();
-    } catch (error) {
-      // 마지막 시도에도 실패하면, 최종적으로 오류를 보고합니다.
-      if (i === maxRetries) {
-        console.error(`API 호출이 ${maxRetries + 1}번의 시도 후에도 실패했습니다.`, error);
-        throw error;
-      }
-      // 아직 더 시도할 수 있다면, 잠시 기다렸다가 다시 시도합니다.
-      console.warn(`API 호출 ${i + 1}차 시도 실패. ${delayMs / 1000}초 후 재시도합니다...`);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-  // 만약을 위한 최종 오류 처리
-  throw new Error("재시도 로직에 예기치 않은 오류가 발생했습니다.");
-};
 
 // AI가 생성할 기본 지도안의 데이터 설계도
 const responseSchema = {
@@ -149,7 +124,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             config: {
                 responseMimeType: "application/json",
                 responseSchema: responseSchema,
-                temperature: 0.6,
+                temperature: 0.7,
             },
         });
         
@@ -182,7 +157,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
                 config: {
                     responseMimeType: "application/json",
                     responseSchema: analysisOnlySchema, // 새로 만든 간단한 설계도 사용
-                    temperature: 0.6,
+                    temperature: 0.7,
                 },
             });
 
@@ -321,7 +296,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
             config: {
                 responseMimeType: "application/json",
                 responseSchema: tablePlanSchema,
-                temperature: 0.6,
+                temperature: 0.7,
             },
         });
         
@@ -367,7 +342,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: topicResponseSchema,
-                temperature: 0.7,
+                temperature: 0.8,
             },
         });
         
@@ -569,7 +544,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
             config: {
                 responseMimeType: "application/json",
                 responseSchema: worksheetSchema,
-                temperature: 0.7,
+                temperature: 0.8,
             },
         });
         
@@ -676,7 +651,7 @@ export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promi
             config: {
                 responseMimeType: "application/json",
                 responseSchema: udlEvaluationPlanSchema,
-                temperature: 0.7,
+                temperature: 0.8,
             },
         });
 
