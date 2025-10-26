@@ -1,7 +1,3 @@
-const apiKey = process.env.VITE_API_KEY || import.meta.env.VITE_API_KEY; 
-if (!apiKey) {
-  throw new Error("VITE_API_KEY가 설정되지 않았습니다. 프로젝트 루트의 .env.local 파일을 확인하세요.");
-}
 import { GoogleGenAI, Type } from "@google/genai";
 import { LessonPlanInputs, GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet, DetailedObjectives } from '../types';
 import { achievementStandardsDB } from '../data/achievementStandards';
@@ -871,64 +867,4 @@ export const reviseUDLLessonPlan = async (
         }
     }
      throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
-};
-
-// ✅ --- '그림 생성 로봇' 함수를 새로 만듭니다. ---
-export const generateImageForActivity = async (prompt: string): Promise<string> => {
-  // 재시도 설정 (이미지 생성은 시간이 걸릴 수 있으므로 조금 더 길게)
-  const maxRetries = 1; // 최대 1번 더 시도 (총 2번)
-  const delayMs = 2000; // 2초 대기
-
-  // Imagen API 엔드포인트와 필요한 데이터 형식
-  // 주의: Imagen API는 별도의 엔드포인트를 사용합니다.
-  // API 키는 기존 Gemini API 키를 그대로 사용합니다.
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`; // ✅ apiKey 변수는 이미 상단에 정의되어 있어야 함
-
-  const payload = {
-    instances: [{ prompt: prompt }],
-    parameters: { sampleCount: 1 } // 이미지는 1개만 생성
-  };
-
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      console.log(`🖼️ Attempting to generate image with prompt: "${prompt}" (Attempt ${i + 1})`);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        // API 자체에서 오류 응답을 보낸 경우 (예: 부적절한 프롬프트)
-        const errorData = await response.json();
-        console.error("Imagen API Error Response:", errorData);
-        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      // 결과 구조 확인 및 Base64 데이터 추출
-      if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-        // 성공! Base64 데이터 앞에 data URI 스킴을 붙여서 반환
-        console.log(`🖼️ Image generated successfully for prompt: "${prompt}"`);
-        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-      } else {
-        // 응답은 성공(200 OK)했지만, 예상된 이미지 데이터가 없는 경우
-        console.error("Unexpected Imagen API response structure:", result);
-        throw new Error("AI로부터 이미지를 받았지만, 예상된 형식이 아닙니다.");
-      }
-
-    } catch (error: any) {
-      console.error(`Error generating image (Attempt ${i + 1}):`, error);
-      if (i === maxRetries) {
-        // 마지막 시도에도 실패하면 최종 오류 throw
-        throw new Error(`AI로부터 이미지를 생성하는 데 실패했습니다: ${error.message}`);
-      }
-      // 실패 시 잠시 대기 후 재시도
-      console.warn(`Image generation failed. Retrying in ${delayMs / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-  // 루프가 모두 실패한 경우 (이론상 도달 X)
-  throw new Error("AI로부터 이미지를 생성하는 데 실패했습니다.");
 };
