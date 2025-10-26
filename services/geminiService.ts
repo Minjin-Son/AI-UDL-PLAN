@@ -870,42 +870,38 @@ export const reviseUDLLessonPlan = async (
 };
 
 export const generateImageForActivity = async (
-  activityTitle: string,     // ✅ 활동 제목 추가
-  activityContent: string,   // ✅ 활동 내용 추가
-  originalImagePrompt: string // ✅ 기존 아이디어는 '스타일 가이드'로 활용
+  activityTitle: string,     // ✅ 활동 제목
+  activityContent: string,   // ✅ 활동 내용
+  originalImagePrompt: string // ✅ 기존 아이디어 (스타일 가이드로 활용)
 ): Promise<string> => {
   const maxRetries = 1;
   const delayMs = 2000;
+
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${process.env.API_KEY}`;
 
-  // ✅ --- 1. 이미지 AI에게 보낼 '더 구체적인 프롬프트' 생성 ---
-  // 단순히 originalImagePrompt만 사용하는 대신, 활동 내용을 바탕으로 새 프롬프트를 만듭니다.
-  // 이 부분은 필요에 따라 더 정교하게 다듬을 수 있습니다.
+  // ✅ 프롬프트 개선 (글자 생성 방지)
   const detailedPrompt = `
     Create ONLY a simple, clear illustration suitable for an elementary school worksheet activity, focusing SOLELY on visual elements.
-    Style guide: "${originalImagePrompt}".
-    Activity title: "${activityTitle}".
-    Activity content: "${activityContent}".
-    Generate an image that visually represents the core subject or objects mentioned in the activity content, matching the requested style.
+    Style guide: "${prompt}".
+    Generate an image that visually represents the core subject or objects mentioned in the style guide.
     Use a white background. Simple line drawings or cartoon style is preferred.
 
     **CRITICAL INSTRUCTION: ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS, NO NUMBERS, NO SYMBOLS, NO WRITING, NO GIBBERISH inside the image.**
-    The image must contain **ONLY** the visual elements requested. Avoid any text-like patterns.
-  `.trim(); // 프롬프트를 깔끔하게 정리
+    The image must contain ONLY the visual elements requested. Avoid any text-like patterns.
+  `.trim();
 
   const payload = {
-    instances: [{ prompt: detailedPrompt }],
-    // ✅ parameters에 negativePrompt를 추가해볼 수 있습니다. (Imagen API v1beta 기준)
+    instances: [{ prompt: detailedPrompt }], // ✅ 개선된 프롬프트 사용
     parameters: {
         sampleCount: 1,
-        // "text", "writing", "letters", "numbers", "symbols", "characters", "gibberish", "words" 등의 키워드를 부정 프롬프트로 추가
+        // ✅ 부정 프롬프트 추가
         negativePrompt: "text, writing, letters, numbers, symbols, characters, gibberish, words, labels, captions"
     }
   };
 
+
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      // ✅ 로그에 어떤 프롬프트가 사용되었는지 명확히 기록
       console.log(`🖼️ Attempting image generation with detailed prompt: "${detailedPrompt}" (Attempt ${i + 1})`);
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -916,7 +912,6 @@ export const generateImageForActivity = async (
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Imagen API Error Response:", errorData);
-        // 오류 메시지에 사용된 프롬프트도 포함하면 디버깅에 도움됨
         throw new Error(`Imagen API Error (prompt: ${detailedPrompt}): ${errorData.error?.message || response.statusText}`);
       }
 
