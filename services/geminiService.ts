@@ -500,40 +500,40 @@ export const generateLearningObjective = async (gradeLevel: string, semester: st
 };
 
 const worksheetSchema = {
-    type: Type.OBJECT,
-    properties: {
-        title: { type: Type.STRING },
-        description: { type: Type.STRING },
-        levels: {
+  type: Type.OBJECT,
+  properties: {
+    title: { type: Type.STRING },
+    description: { type: Type.STRING },
+    levels: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          levelName: { type: Type.STRING, description: "'기본', '보충', 또는 '심화'" },
+          title: { type: Type.STRING, description: "해당 수준의 활동 제목" },
+          activities: {
             type: Type.ARRAY,
             items: {
-                type: Type.OBJECT,
-                properties: {
-                    levelName: { type: Type.STRING, description: "'기본', '보충', 또는 '심화'" },
-                    title: { type: Type.STRING, description: "해당 수준의 활동 제목" },
-                    activities: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
-                                description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
-                                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" }
-                            },
-                             imagePrompt: { 
-                  type: Type.STRING, 
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
+                description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
+                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" },
+                imagePrompt: { // ✅ 이 부분이 올바른지 다시 확인
+                  type: Type.STRING,
                   description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)",
-                  nullable: true // ✅ 없을 수도 있음을 명시
-                },
-                            required: ["title", "description", "content"]
-                        }
-                    }
-                },
-                required: ["levelName", "title", "activities"]
+                  nullable: true
+                }
+              },
+              required: ["title", "description", "content"]
             }
-        }
-    },
-    required: ["title", "description", "levels"]
+          }
+        },
+        required: ["levelName", "title", "activities"]
+      }
+    }
+  },
+  required: ["title", "description", "levels"]
 };
 
 export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Worksheet> => {
