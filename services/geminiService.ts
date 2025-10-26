@@ -868,3 +868,54 @@ export const reviseUDLLessonPlan = async (
     }
      throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
 };
+
+export const generateImageForActivity = async (prompt: string): Promise<string> => {
+  // 재시도 설정
+  const maxRetries = 1;
+  const delayMs = 2000;
+
+  // Imagen API 엔드포인트와 API 키
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${process.env.API_KEY}`; // ✅ apiKey 변수 참조
+
+  const payload = {
+    instances: [{ prompt: prompt }],
+    parameters: { sampleCount: 1 }
+  };
+
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      console.log(`🖼️ Attempting image generation: "${prompt}" (Attempt ${i + 1})`);
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Imagen API Error:", errorData);
+        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+        console.log(`🖼️ Image generated successfully: "${prompt}"`);
+        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`; // 성공 시 반환
+      } else {
+        console.error("Unexpected Imagen API response:", result);
+        throw new Error("AI로부터 이미지를 받았지만, 예상된 형식이 아닙니다.");
+      }
+
+    } catch (error: any) {
+      console.error(`Error generating image (Attempt ${i + 1}):`, error);
+      if (i === maxRetries) {
+        throw new Error(`AI로부터 이미지를 생성하는 데 실패했습니다: ${error.message}`);
+      }
+      console.warn(`Image generation failed. Retrying in ${delayMs / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+  // 루프가 모두 실패한 경우
+  throw new Error("AI로부터 이미지를 생성하는 데 실패했습니다.");
+};
