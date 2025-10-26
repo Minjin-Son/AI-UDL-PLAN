@@ -869,22 +869,37 @@ export const reviseUDLLessonPlan = async (
      throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
 };
 
-export const generateImageForActivity = async (prompt: string): Promise<string> => {
-  // 재시도 설정
+export const generateImageForActivity = async (
+  activityTitle: string,     // ✅ 활동 제목 추가
+  activityContent: string,   // ✅ 활동 내용 추가
+  originalImagePrompt: string // ✅ 기존 아이디어는 '스타일 가이드'로 활용
+): Promise<string> => {
   const maxRetries = 1;
   const delayMs = 2000;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${process.env.API_KEY}`;
 
-  // Imagen API 엔드포인트와 API 키
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${process.env.API_KEY}`; // ✅ apiKey 변수 참조
+  // ✅ --- 1. 이미지 AI에게 보낼 '더 구체적인 프롬프트' 생성 ---
+  // 단순히 originalImagePrompt만 사용하는 대신, 활동 내용을 바탕으로 새 프롬프트를 만듭니다.
+  // 이 부분은 필요에 따라 더 정교하게 다듬을 수 있습니다.
+  const detailedPrompt = `
+    Create a simple, clear illustration suitable for an elementary school worksheet activity.
+    The style guide is: "${originalImagePrompt}". 
+    The activity title is "${activityTitle}".
+    The activity content/instruction is: "${activityContent}".
+    Generate an image that visually represents the core subject or objects mentioned in the activity content, matching the requested style. 
+    Focus on the main elements needed for the worksheet. For example, if the content asks to circle weather icons, generate those specific icons.
+    Use a white background unless specified otherwise. Simple line drawings or cartoon style is preferred.
+  `.trim(); // 프롬프트를 깔끔하게 정리
 
   const payload = {
-    instances: [{ prompt: prompt }],
+    instances: [{ prompt: detailedPrompt }], // ✅ 개선된 프롬프트 사용
     parameters: { sampleCount: 1 }
   };
 
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      console.log(`🖼️ Attempting image generation: "${prompt}" (Attempt ${i + 1})`);
+      // ✅ 로그에 어떤 프롬프트가 사용되었는지 명확히 기록
+      console.log(`🖼️ Attempting image generation with detailed prompt: "${detailedPrompt}" (Attempt ${i + 1})`);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -893,17 +908,18 @@ export const generateImageForActivity = async (prompt: string): Promise<string> 
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Imagen API Error:", errorData);
-        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
+        console.error("Imagen API Error Response:", errorData);
+        // 오류 메시지에 사용된 프롬프트도 포함하면 디버깅에 도움됨
+        throw new Error(`Imagen API Error (prompt: ${detailedPrompt}): ${errorData.error?.message || response.statusText}`);
       }
 
       const result = await response.json();
 
       if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-        console.log(`🖼️ Image generated successfully: "${prompt}"`);
-        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`; // 성공 시 반환
+        console.log(`🖼️ Image generated successfully for prompt: "${detailedPrompt}"`);
+        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
       } else {
-        console.error("Unexpected Imagen API response:", result);
+        console.error("Unexpected Imagen API response structure:", result);
         throw new Error("AI로부터 이미지를 받았지만, 예상된 형식이 아닙니다.");
       }
 
@@ -916,6 +932,5 @@ export const generateImageForActivity = async (prompt: string): Promise<string> 
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
-  // 루프가 모두 실패한 경우
   throw new Error("AI로부터 이미지를 생성하는 데 실패했습니다.");
 };
