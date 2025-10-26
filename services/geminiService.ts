@@ -889,6 +889,9 @@ export const generateImageForActivity = async (
     Generate an image that visually represents the core subject or objects mentioned in the activity content, matching the requested style. 
     Focus on the main elements needed for the worksheet. For example, if the content asks to circle weather icons, generate those specific icons.
     Use a white background unless specified otherwise. Simple line drawings or cartoon style is preferred.
+    // ✅ --- 중요: AI에게 이미지 내 텍스트 생성을 요청하는 부분을 제거 ---
+    // Do NOT include any text, labels, or numbers within the image itself.
+    // Ensure there are no foreign or gibberish characters in the image.
   `.trim(); // 프롬프트를 깔끔하게 정리
 
   const payload = {
