@@ -66,6 +66,7 @@ export interface WorksheetActivity {
     title: string;
     description: string;
     content: string;
+    imagePrompt?: string;
 }
 
 export interface WorksheetLevel {
