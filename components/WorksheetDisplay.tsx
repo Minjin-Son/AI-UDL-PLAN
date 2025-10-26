@@ -1,7 +1,6 @@
 import React from 'react'; // ✅ useState, useCallback 등 불필요한 import 제거
 import { Worksheet, WorksheetLevel, WorksheetActivity } from '../types';
 // ✅ import { generateImageForActivity } from '../services/geminiService'; // 이미지 생성 함수 import 제거
-
 // ✅ WorksheetDisplayProps 인터페이스 - onPlanChange 제거됨
 interface WorksheetDisplayProps {
   plan: Worksheet;
