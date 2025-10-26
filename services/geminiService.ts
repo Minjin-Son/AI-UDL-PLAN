@@ -785,3 +785,80 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
         throw new Error("AI로부터 과정중심평가지를 생성하는 데 실패했습니다.");
     }
 };
+
+export const reviseUDLLessonPlan = async (
+  originalPlan: GeneratedLessonPlan,
+  userFeedback: string
+): Promise<GeneratedLessonPlan> => {
+    // 재시도 설정 (재시도 로봇 없이 직접 구현)
+    const maxRetries = 2;
+    const delayMs = 1500;
+
+    for (let i = 0; i <= maxRetries; i++) {
+        try {
+            const planToSend = { ...originalPlan };
+            delete planToSend.id; 
+            const prompt = `
+              당신은 UDL 수업 설계 전문가이자, 기존 지도안을 사용자의 피드백에 따라 수정하는 뛰어난 편집자입니다.
+
+              아래에 제공된 **'기존 UDL 지도안'**을 바탕으로, 사용자의 **'수정 요청 사항'**을 반영하여 **개선된 UDL 지도안**을 생성해주세요.
+          
+              **[기존 UDL 지도안 (JSON 형식)]**
+              ${JSON.stringify(planToSend)}
+          
+              **[사용자 수정 요청 사항]**
+              ${userFeedback}
+          
+              **수정 지침:**
+              1.  기존 지도안의 전체 구조와 JSON 스키마 형식(${JSON.stringify(responseSchema)})은 **반드시 그대로 유지**해야 합니다.
+              2.  사용자의 수정 요청 사항을 **창의적이면서도 교육적으로 타당하게** 반영하여 내용을 수정하거나 추가/삭제해주세요. (예: '퀴즈 추가' 요청 시, 단순히 퀴즈만 넣는 것이 아니라 수업 흐름에 맞게 자연스럽게 배치)
+              3.  결과물은 반드시 기존과 동일한 JSON 스키마 형식(${JSON.stringify(responseSchema)})으로 반환해야 합니다. 모든 내용은 한국어로 작성해주세요.
+              4.  결과물에는 **설명이나 \`\`\`json \`\`\` 같은 불필요한 텍스트 없이 순수한 JSON 객체만** 포함해야 합니다.
+            `;
+
+            // ✅ 선생님의 기존 API 호출 방식 사용
+            // @ts-ignore - response 타입 추론을 위해 무시
+            const response = await ai.models.generateContent({
+                model: "gemini-1.5-pro-latest", // Pro 모델 사용
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema, // UDL 지도안과 동일한 서식 사용
+                    temperature: 0.6,
+                },
+            });
+
+            // @ts-ignore - response.text 타입 추론을 위해 무시
+            let jsonText = response.text?.trim(); // 최신 라이브러리의 .text() 대신 기존 방식 유지
+            if (!jsonText) throw new Error("AI로부터 빈 응답을 받았습니다.");
+        
+            if (jsonText.startsWith("```json")) {
+              jsonText = jsonText.substring(7, jsonText.length - 3);
+            }
+            const parsed = JSON.parse(jsonText) as Partial<GeneratedLessonPlan>;
+            
+            // 필수 필드 검증 강화
+             const requiredKeys: (keyof GeneratedLessonPlan)[] = [
+               "lessonTitle", "subject", "gradeLevel", "learningObjectives", 
+               "detailedObjectives", "contextAnalysis", "learnerAnalysis", 
+               "udlPrinciples", "assessment", "multimedia_resources"
+             ];
+             const missingKeys = requiredKeys.filter(key => !(key in parsed));
+             if (missingKeys.length > 0) {
+                 console.error("AI revision response is missing required keys:", missingKeys, parsed);
+                 throw new Error(`AI가 수정한 지도안에 필수 항목이 누락되었습니다: ${missingKeys.join(', ')}`);
+             }
+
+            return parsed as GeneratedLessonPlan; // 성공 시 결과 반환
+
+        } catch (error: any) {
+             if (i === maxRetries) {
+                console.error("지도안 수정 중 모든 재시도 실패:", error);
+                throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다. 잠시 후 다시 시도해주세요.");
+            }
+            console.warn(`지도안 수정 실패 (${i + 1}차 시도). ${delayMs / 1000}초 후 재시도합니다...`);
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+    }
+     throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
+};

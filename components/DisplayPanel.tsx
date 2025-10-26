@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GeneratedLessonPlan } from '../types';
 import TableDisplay from './TableDisplay';
 import UDLDisplay from './UDLDisplay';
@@ -26,6 +26,10 @@ interface DisplayPanelProps {
   setIsEditing: (isEditing: boolean) => void;
   onUpdatePlan: (plan: GeneratedLessonPlan) => void;
   onPrint: (plan: GeneratedLessonPlan) => void;
+  // ✅ 수정 요청을 App.tsx로 전달하는 함수 prop 추가
+  onRevisionRequest: (currentPlan: GeneratedLessonPlan, feedback: string) => void;
+  // ✅ 수정 중인지 알려주는 로딩 상태 prop 추가
+  isRevising: boolean;
 }
 
 const LoadingState: React.FC = () => (
@@ -75,7 +79,7 @@ const PlanDisplay: React.FC<{
   setIsEditing: (isEditing: boolean) => void;
   onUpdatePlan: (plan: GeneratedLessonPlan) => void;
   onPrint: (plan: GeneratedLessonPlan) => void;
-}> = ({ plan, onSavePlan, isSaved, onGenerateTableView, isTableLoading, onGenerateWorksheet, isWorksheetLoading, onGenerateUdlEvaluation, isUdlEvaluationLoading, onGenerateProcessEvaluation, isProcessEvaluationLoading, isEditing, setIsEditing, onUpdatePlan, onPrint }) => {
+}> = ({ plan, onSavePlan, isSaved, onGenerateTableView, isTableLoading, onGenerateWorksheet, isWorksheetLoading, onGenerateUdlEvaluation, isUdlEvaluationLoading, onGenerateProcessEvaluation, isProcessEvaluationLoading, isEditing, setIsEditing, onUpdatePlan, onPrint, onRevisionRequest, isRevising }) => {
   const [view, setView] = useState<'udl' | 'table' | 'worksheet' | 'udlEvaluation' | 'processEvaluation'>('udl');
   const [editablePlan, setEditablePlan] = useState<GeneratedLessonPlan>(plan);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -449,6 +453,8 @@ const DisplayPanel: React.FC<DisplayPanelProps> = (props) => {
       setIsEditing={props.setIsEditing}
       onUpdatePlan={props.onUpdatePlan}
       onPrint={props.onPrint}
+      onRevisionRequest={props.onRevisionRequest} // App.tsx에서 만든 함수를 넘겨줍니다.
+      isRevising={props.isRevising} // App.tsx의 로딩 상태를 넘겨줍니다.
     />;
   } else {
     content = <InitialState />;

@@ -154,6 +154,7 @@ export interface GeneratedLessonPlan {
 
   udlPrinciples: UDLPrincipleSection[];
   assessment: AssessmentSection;
+  multimedia_resources?: MultimediaResource[];
 }
 export interface MultimediaResource {
   title: string;
