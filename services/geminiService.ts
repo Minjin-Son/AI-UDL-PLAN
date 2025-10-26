@@ -882,21 +882,25 @@ export const generateImageForActivity = async (
   // 단순히 originalImagePrompt만 사용하는 대신, 활동 내용을 바탕으로 새 프롬프트를 만듭니다.
   // 이 부분은 필요에 따라 더 정교하게 다듬을 수 있습니다.
   const detailedPrompt = `
-    Create a simple, clear illustration suitable for an elementary school worksheet activity.
-    The style guide is: "${originalImagePrompt}". 
-    The activity title is "${activityTitle}".
-    The activity content/instruction is: "${activityContent}".
-    Generate an image that visually represents the core subject or objects mentioned in the activity content, matching the requested style. 
-    Focus on the main elements needed for the worksheet. For example, if the content asks to circle weather icons, generate those specific icons.
-    Use a white background unless specified otherwise. Simple line drawings or cartoon style is preferred.
-    // ✅ --- 중요: AI에게 이미지 내 텍스트 생성을 요청하는 부분을 제거 ---
-    // Do NOT include any text, labels, or numbers within the image itself.
-    // Ensure there are no foreign or gibberish characters in the image.
+    Create ONLY a simple, clear illustration suitable for an elementary school worksheet activity, focusing SOLELY on visual elements.
+    Style guide: "${originalImagePrompt}".
+    Activity title: "${activityTitle}".
+    Activity content: "${activityContent}".
+    Generate an image that visually represents the core subject or objects mentioned in the activity content, matching the requested style.
+    Use a white background. Simple line drawings or cartoon style is preferred.
+
+    **CRITICAL INSTRUCTION: ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS, NO NUMBERS, NO SYMBOLS, NO WRITING, NO GIBBERISH inside the image.**
+    The image must contain **ONLY** the visual elements requested. Avoid any text-like patterns.
   `.trim(); // 프롬프트를 깔끔하게 정리
 
   const payload = {
-    instances: [{ prompt: detailedPrompt }], // ✅ 개선된 프롬프트 사용
-    parameters: { sampleCount: 1 }
+    instances: [{ prompt: detailedPrompt }],
+    // ✅ parameters에 negativePrompt를 추가해볼 수 있습니다. (Imagen API v1beta 기준)
+    parameters: {
+        sampleCount: 1,
+        // "text", "writing", "letters", "numbers", "symbols", "characters", "gibberish", "words" 등의 키워드를 부정 프롬프트로 추가
+        negativePrompt: "text, writing, letters, numbers, symbols, characters, gibberish, words, labels, captions"
+    }
   };
 
   for (let i = 0; i <= maxRetries; i++) {
