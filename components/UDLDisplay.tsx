@@ -61,8 +61,8 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     
     // 4단계를 위한 전략 분리
     const engagementPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("참여"));
-    const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표상"));
-    const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("행동"));
+    const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표현"));
+    const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행"));
 
     const engagementStrategies = engagementPrincipleIndex > -1 ? plan.udlPrinciples[engagementPrincipleIndex].strategies : [];
     const representationStrategies = representationPrincipleIndex > -1 ? plan.udlPrinciples[representationPrincipleIndex].strategies : [];
