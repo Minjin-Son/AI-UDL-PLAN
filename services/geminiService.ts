@@ -362,7 +362,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: topicResponseSchema,
-                temperature: 0.8,
+                temperature: 0.6,
             },
         });
         
@@ -570,7 +570,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
             config: {
                 responseMimeType: "application/json",
                 responseSchema: worksheetSchema,
-                temperature: 0.8,
+                temperature: 0.5,
             },
         });
         
