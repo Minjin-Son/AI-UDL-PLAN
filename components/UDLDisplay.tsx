@@ -64,7 +64,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표상"));
     const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행"));
 
-    // 인덱스를 사용하여 전략 배열 가져오기 (이 부분은 이미 올바르게 작성되어 있었습니다)
+    // 인덱스를 사용하여 전략 배열 가져오기
     const engagementStrategies = engagementPrincipleIndex > -1 ? plan.udlPrinciples[engagementPrincipleIndex].strategies : [];
     const representationStrategies = representationPrincipleIndex > -1 ? plan.udlPrinciples[representationPrincipleIndex].strategies : [];
     const actionStrategies = actionPrincipleIndex > -1 ? plan.udlPrinciples[actionPrincipleIndex].strategies : [];
@@ -155,55 +155,54 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                     <td className="font-semibold align-middle text-center p-2 border-r border-slate-300 w-1/4">
                       3단계<br/>보편적 학습설계<br/>원리 적용하기
                     </td>
-                    <td colSpan={4} className="p-0 border border-t border-slate-300"> {/* 3단계 td에 colSpan=4와 border-t 추가 */}
+                    <td colSpan={4} className="p-0 border border-t border-slate-300">
                       <table className="w-full inner-table">
                         <thead>
                           <tr className="bg-slate-50">
-                            {/* [수정됨]
-                              - engagementPrinciple -> plan.udlPrinciples[engagementPrincipleIndex]
-                              - representationPrinciple -> plan.udlPrinciples[representationPrincipleIndex]
-                              - actionPrinciple -> plan.udlPrinciples[actionPrincipleIndex]
-                              
-                              '?'(Optional Chaining)을 사용하여 'principle' 속성을 안전하게 접근합니다.
-                              만약 findIndex가 -1을 반환(못 찾음)했더라도, plan.udlPrinciples[-1]은 undefined가 되므로
-                              ?.principle 접근 시 에러 없이 undefined가 되고, || 뒤의 기본값이 사용됩니다.
-                            */}
                             <th className="font-bold p-2 border-b border-r border-slate-300 w-1/3 text-left">{plan.udlPrinciples[engagementPrincipleIndex]?.principle || '참여의 원리'}</th>
                             <th className="font-bold p-2 border-b border-r border-slate-300 w-1/3 text-left">{plan.udlPrinciples[representationPrincipleIndex]?.principle || '표상의 원리'}</th>
                             <th className="font-bold p-2 border-b border-slate-300 w-1/3 text-left">{plan.udlPrinciples[actionPrincipleIndex]?.principle || '행동 및 표현의 원리'}</th>
                           </tr>
                         </thead>
+                        {/* [수정됨] 3단계 <tbody>
+                          - 4단계와 동일하게 <ul>, <li>, <strong> 태그를 제거했습니다.
+                          - {strat.strategy} (전략명)을 표시하지 않고 {strat.example} (전략 예시)만 표시합니다.
+                          - 4단계와 동일하게 각 항목을 <div>로 감싸고 mb-2, text-sm 클래스를 적용했습니다.
+                        */}
                         <tbody>
                           <tr>
                             <td className="align-top p-2 border-r border-slate-300">
-                              <ul className="list-disc list-inside space-y-2">
                                 {engagementStrategies.map((strat, index) => (
-                                  <li key={index} className="text-sm">
-                                    <strong>{strat.strategy}: </strong>
-                                    <EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'example', e.target.value)} textClassName="inline text-slate-600" />
-                                  </li>
+                                    <div key={index} className="mb-2 text-sm">
+                                        <EditableField 
+                                          isEditing={isEditing} 
+                                          value={strat.example} 
+                                          onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'example', e.target.value)} 
+                                        />
+                                    </div>
                                 ))}
-                              </ul>
                             </td>
                             <td className="align-top p-2 border-r border-slate-300">
-                               <ul className="list-disc list-inside space-y-2">
-                                {representationStrategies.map((strat, index) => (
-                                  <li key={index} className="text-sm">
-                                    <strong>{strat.strategy}: </strong>
-                                    <EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'example', e.target.value)} textClassName="inline text-slate-600" />
-                                  </li>
+                               {representationStrategies.map((strat, index) => (
+                                    <div key={index} className="mb-2 text-sm">
+                                        <EditableField 
+                                          isEditing={isEditing} 
+                                          value={strat.example} 
+                                          onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'example', e.target.value)} 
+                                        />
+                                    </div>
                                 ))}
-                              </ul>
                             </td>
                             <td className="align-top p-2">
-                               <ul className="list-disc list-inside space-y-2">
-                                {actionStrategies.map((strat, index) => (
-                                  <li key={index} className="text-sm">
-                                    <strong>{strat.strategy}: </strong>
-                                    <EditableField isEditing={isEditing} value={strat.example} onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'example', e.target.value)} textClassName="inline text-slate-600" />
-                                  </li>
+                               {actionStrategies.map((strat, index) => (
+                                    <div key={index} className="mb-2 text-sm">
+                                        <EditableField 
+                                          isEditing={isEditing} 
+                                          value={strat.example} 
+                                          onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'example', e.target.value)} 
+                                        />
+                                    </div>
                                 ))}
-                              </ul>
                             </td>
                           </tr>
                         </tbody>
