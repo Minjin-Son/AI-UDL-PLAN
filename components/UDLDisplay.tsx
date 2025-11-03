@@ -74,11 +74,11 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
             <table className="udl-table w-full border-collapse">
                 <colgroup>
-                    <col style={{ width: '12%' }} />
-                    <col style={{ width: '23%' }} />
-                    <col style={{ width: '21.6%' }} />
-                    <col style={{ width: '21.6%' }} />
-                    <col style={{ width: '21.6%' }} />
+                    <col style={{ width: '10%' }} /> {/* 단계 */}
+                    <col style={{ width: '22%' }} /> {/* 교육과정 성취기준 */}
+                    <col style={{ width: '22%' }} /> {/* 전체 */}
+                    <col style={{ width: '22%' }} /> {/* 일부 */}
+                    <col style={{ width: '24%' }} /> {/* 소수 */}
                 </colgroup>
                 <thead>
                     <tr className="bg-slate-100">

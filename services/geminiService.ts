@@ -144,7 +144,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             config: {
                 responseMimeType: "application/json",
                 responseSchema: responseSchema,
-                temperature: 0.6,
+                temperature: 0.8,
             },
         });
         
@@ -177,7 +177,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
                 config: {
                     responseMimeType: "application/json",
                     responseSchema: analysisOnlySchema, // 새로 만든 간단한 설계도 사용
-                    temperature: 0.6,
+                    temperature: 0.8,
                 },
             });
 
@@ -316,7 +316,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
             config: {
                 responseMimeType: "application/json",
                 responseSchema: tablePlanSchema,
-                temperature: 0.6,
+                temperature: 0.8,
             },
         });
         
@@ -362,7 +362,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
             config: {
                 responseMimeType: "application/json",
                 responseSchema: topicResponseSchema,
-                temperature: 0.6,
+                temperature: 0.8,
             },
         });
         
@@ -480,7 +480,7 @@ export const generateLearningObjective = async (gradeLevel: string, semester: st
             config: {
                 responseMimeType: "application/json",
                 responseSchema: objectiveResponseSchema,
-                temperature: 0.6,
+                temperature: 0.8,
             },
         });
         
@@ -830,7 +830,7 @@ export const reviseUDLLessonPlan = async (
                 config: {
                     responseMimeType: "application/json",
                     responseSchema: responseSchema, // UDL 지도안과 동일한 서식 사용
-                    temperature: 0.6,
+                    temperature: 0.8,
                 },
             });
 
