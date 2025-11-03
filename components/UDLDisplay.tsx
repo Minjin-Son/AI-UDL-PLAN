@@ -73,26 +73,25 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
             <table className="udl-table w-full border-collapse">
+                {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
                 <colgroup>
                     <col style={{ width: '10%' }} /> {/* 단계 */}
-                    <col style={{ width: '22%' }} /> {/* 교육과정 성취기준 */}
-                    <col style={{ width: '22%' }} /> {/* 전체 */}
-                    <col style={{ width: '22%' }} /> {/* 일부 */}
-                    <col style={{ width: '24%' }} /> {/* 소수 */}
+                    <col style={{ width: '22%' }} /> {/* 구분 */}
+                    <col style={{ width: '68%' }} /> {/* 내용 */}
                 </colgroup>
                 <thead>
+                    {/* [수정됨] header를 5열에서 3열로 변경 */}
                     <tr className="bg-slate-100">
                         <th className="p-2 border border-slate-300 font-semibold">단계</th>
-                        <th className="p-2 border border-slate-300 font-semibold">교육과정 성취기준</th>
-                        <th className="p-2 border border-slate-300 font-semibold">전체</th>
-                        <th className="p-2 border border-slate-300 font-semibold">일부</th>
-                        <th className="p-2 border border-slate-300 font-semibold">소수</th>
+                        <th className="p-2 border border-slate-300 font-semibold">구분</th>
+                        <th className="p-2 border border-slate-300 font-semibold">내용</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {/* 1단계 */}
+                    {/* [수정됨] 1단계 구조 변경: 1행 5열 -> 4행 3열 (rowSpan 사용) */}
                     <tr>
-                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">1단계<br />목표 확인 및<br />설정하기</td>
+                        <td rowSpan={4} className="font-semibold align-middle text-center p-2 border border-slate-300">1단계<br />목표 확인 및<br />설정하기</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">교육과정 성취기준</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -101,6 +100,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 textClassName="text-sm"
                             />
                         </td>
+                    </tr>
+                    <tr>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">전체</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -109,6 +111,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 textClassName="text-sm"
                             />
                         </td>
+                    </tr>
+                    <tr>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">일부</td>
                         <td className="align-top p-2 border border-slate-300">
                              <EditableField
                                 isEditing={isEditing}
@@ -117,6 +122,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 textClassName="text-sm"
                             />
                         </td>
+                    </tr>
+                    <tr>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">소수</td>
                         <td className="align-top p-2 border border-slate-300">
                              <EditableField
                                 isEditing={isEditing}
@@ -126,11 +134,11 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                             />
                         </td>
                     </tr>
-                    {/* 2단계 */}
+                    {/* [수정됨] 2단계: colSpan={3} 제거 */}
                     <tr>
                         <td rowSpan={2} className="font-semibold align-middle text-center p-2 border border-slate-300">2단계<br />상황 분석하기</td>
                         <td className="font-bold p-2 border border-slate-300">상황 분석하기</td>
-                        <td colSpan={3} className="p-2 border border-slate-300">
+                        <td className="p-2 border border-slate-300">
                             <EditableField 
                                 isEditing={isEditing} 
                                 value={plan.contextAnalysis || ''} 
@@ -141,7 +149,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                     </tr>
                     <tr>
                         <td className="font-bold p-2 border border-slate-300">학습자 분석하기</td>
-                        <td colSpan={3} className="p-2 border border-slate-300">
+                        <td className="p-2 border border-slate-300">
                             <EditableField 
                                 isEditing={isEditing} 
                                 value={plan.learnerAnalysis || ''} 
@@ -150,12 +158,12 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                             />
                         </td>
                     </tr>
-                    {/* 3단계 */}
+                    {/* [수정됨] 3단계: colSpan={4} -> colSpan={2} */}
                    <tr className="align-top">
                     <td className="font-semibold align-middle text-center p-2 border-r border-slate-300 w-1/4">
                       3단계<br/>보편적 학습설계<br/>원리 적용하기
                     </td>
-                    <td colSpan={4} className="p-0 border border-t border-slate-300">
+                    <td colSpan={2} className="p-0 border border-t border-slate-300">
                       <table className="w-full inner-table">
                         <thead>
                           <tr className="bg-slate-50">
@@ -164,11 +172,6 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                             <th className="font-bold p-2 border-b border-slate-300 w-1/3 text-left">{plan.udlPrinciples[actionPrincipleIndex]?.principle || '행동 및 표현의 원리'}</th>
                           </tr>
                         </thead>
-                        {/* [수정됨] 3단계 <tbody>
-                          - 4단계와 동일하게 <ul>, <li>, <strong> 태그를 제거했습니다.
-                          - {strat.strategy} (전략명)을 표시하지 않고 {strat.example} (전략 예시)만 표시합니다.
-                          - 4단계와 동일하게 각 항목을 <div>로 감싸고 mb-2, text-sm 클래스를 적용했습니다.
-                        */}
                         <tbody>
                           <tr>
                             <td className="align-top p-2 border-r border-slate-300">
@@ -209,10 +212,10 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                       </table>
                     </td>
                   </tr>
-                    {/* 4단계 */}
+                    {/* [수정됨] 4단계: colSpan={4} -> colSpan={2} */}
                        <tr>
                             <td className="font-semibold align-middle text-center p-2 border border-slate-300">4단계<br />보편적 학습설계<br />수업 구상하기</td>
-                            <td colSpan={4} className="p-0 border border-slate-300">
+                            <td colSpan={2} className="p-0 border border-slate-300">
                                <table className="w-full inner-table">
                                    <thead>
                                        <tr>
