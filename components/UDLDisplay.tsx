@@ -61,7 +61,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     
     // 4단계를 위한 전략 분리
     const engagementPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("참여"));
-    const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표현"));
+    const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표상"));
     const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행"));
 
     const engagementStrategies = engagementPrincipleIndex > -1 ? plan.udlPrinciples[engagementPrincipleIndex].strategies : [];
@@ -152,7 +152,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                     {/* 3단계 */}
                     <tr>
                          <td className="font-semibold align-middle text-center p-2 border border-slate-300" rowSpan={plan.udlPrinciples.length + 1}>3단계<br/>보편적 학습설계<br/>원리 적용하기</td>
-                         <td className="font-bold p-2 border border-slate-300" colSpan={4}>세가지 원리</td>
+                         <td className="font-bold align-middle text-center p-2 border border-slate-300" colSpan={4}>세가지 원리</td>
                     </tr>
                     {plan.udlPrinciples.map((principle, pIndex) => (
                         <tr key={pIndex}>

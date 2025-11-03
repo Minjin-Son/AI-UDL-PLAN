@@ -43,7 +43,7 @@ const responseSchema = {
         learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
         udlPrinciples: {
             type: Type.ARRAY,
-            description: "UDL의 세 가지 원칙(참여, 표현, 실행)에 따른 구체적인 전략들",
+            description: "UDL의 세 가지 원칙(참여, 표상, 실행)에 따른 구체적인 전략들",
             items: {
                 type: Type.OBJECT,
                 properties: {
@@ -130,7 +130,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
          - **각 목표는 글머리 기호(•)로 시작하며, 각 항목은 줄바꿈(\\n)으로 분리된 별도의 줄에 작성해주세요.**
 
       2.  **2단계 - 분석:** 2022 개정 교육과정에 근거하여, '상황 분석(contextAnalysis)'과 '학습자 분석(learnerAnalysis)' 항목을 각각 2~3 문장으로 구체적으로 작성해주세요. 상황 분석은 수업 환경과 맥락을, 학습자 분석은 학생들의 발달 특성을 고려해야 합니다.
-      3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표현, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
+      3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표상, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
       4.  **멀티미디어 자료 추천:** 수업 주제와 관련된 유용한 시청각 자료(유튜브 영상, 이미지 등)를 2~3개 추천하여 'multimedia_resources' 배열 형식으로 제공해주세요. 각 자료에는 title, platform, search_query가 포함되어야 합니다.
       5.  **평가 계획:** 학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
       6.  **기타:** 'lessonTitle'은 주제와 관련하여 창의적으로 작성하고, 'subject'와 'gradeLevel'은 입력받은 값을 그대로 사용해주세요.
@@ -598,7 +598,7 @@ const udlEvaluationPlanSchema = {
                     udlConnections: {
                         type: Type.ARRAY,
                         items: { type: Type.STRING },
-                        description: "연결된 UDL 원칙 (예: '다양한 표현 수단 제공')"
+                        description: "연결된 UDL 원칙 (예: '다양한 표상 수단 제공')"
                     },
                     levels: {
                         type: Type.OBJECT,
@@ -658,7 +658,7 @@ export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promi
             -   각 과제는 학습 목표와 직접적으로 연관되어야 합니다.
             -   'taskTitle': 과제의 명확한 제목을 붙여주세요.
             -   'taskDescription': 과제가 무엇인지 구체적으로 설명해주세요.
-            -   'udlConnections': 이 과제가 UDL의 어떤 원칙(참여, 표현, 실행)과 관련이 있는지 1~2개 연결하여 설명해주세요.
+            -   'udlConnections': 이 과제가 UDL의 어떤 원칙(참여, 표상, 실행)과 관련이 있는지 1~2개 연결하여 설명해주세요.
         3.  **수준별 구성(levels):**
             -   각 과제는 '상(advanced)', '중(proficient)', '하(basic)'의 세 가지 수준으로 나누어 제시해야 합니다.
             -   각 수준별로 학생에게 제공될 '과제 설명(description)'과 교사가 학생을 평가할 '평가 기준(criteria)'을 구체적으로 작성해주세요.
