@@ -69,59 +69,6 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     const representationStrategies = representationPrincipleIndex > -1 ? plan.udlPrinciples[representationPrincipleIndex].strategies : [];
     const actionStrategies = actionPrincipleIndex > -1 ? plan.udlPrinciples[actionPrincipleIndex].strategies : [];
 
- {/* [수정됨] 인쇄 전용 스타일 추가 */}
-    const printStyles = `
-        @media print {
-            /* A4 페이지 크기 및 여백 설정 */
-            @page {
-                size: A4;
-                margin: 1.5cm;
-            }
-
-            /* 인쇄 시 강제로 배경색과 색상을 적용 (브라우저 설정 무시) */
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            /* 인쇄 시 불필요한 여백, 그림자 제거 */
-            .print-container {
-                padding: 0 !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-
-            /* 핵심: 표의 행이 페이지 중간에 잘리는 것을 방지 */
-            .udl-table > tbody > tr {
-                page-break-inside: avoid !important;
-            }
-
-            /* 3, 4단계의 내부 표가 잘리는 것도 방지 */
-            .inner-table {
-                page-break-inside: avoid !important;
-            }
-
-            /* 표가 길어져 페이지가 나뉘면, 헤더를 다음 페이지에도 반복 */
-            .udl-table > thead {
-                display: table-header-group;
-            }
-
-            /* 연한 배경색 강제 인쇄 (가독성) */
-            .bg-slate-50 {
-                background-color: #f8fafc !important;
-            }
-            .bg-slate-100 {
-                background-color: #f1f5f9 !important;
-            }
-
-            /* 텍스트 색상 강제 (검정) */
-            .text-slate-800, .font-bold {
-                color: #000 !important;
-            }
-        }
-    `;
-
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
