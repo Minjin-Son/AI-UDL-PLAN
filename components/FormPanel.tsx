@@ -292,16 +292,16 @@ const FormPanel: React.FC<FormPanelProps> = ({
           </div>
         </FormField>
 
-        <FormField label="특수교육대상학생 특성 (선택)">
+        <FormField label="우리 반 학생들의 전체적인 특성 및 특수교육대상자의 특성(선택)">
           <textarea
             name="studentCharacteristics"
             value={lessonInputs.studentCharacteristics}
             onChange={handleInputChange}
             rows={4}
             className="w-full p-2 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-            placeholder="예: 시각적 자료에 강점이 있으나, 긴 문장을 읽고 이해하는 데 어려움을 보임. 소그룹 활동에서 적극적으로 참여함."
-          />
-          <p className="text-xs text-slate-500 mt-1">학생의 강점, 약점, 흥미 등을 구체적으로 작성하면 더 맞춤화된 지도안이 생성됩니다.</p>
+            placeholder="예: (전체) 학습 동기가 높으나 수학에 대한 자신감이 부족함. (특수) A학생은 시각 자료에 강점이 있으나 긴 문장 읽기에 어려움이 있음."
+          />
+          <p className="text-xs text-slate-500 mt-1">학급의 전반적인 분위기나 학생들의 특성(강점, 약점, 흥미)을 구체적으로 작성하면 더 맞춤화된 지도안이 생성됩니다.</p>
         </FormField>
 
         {isLoading ? (
