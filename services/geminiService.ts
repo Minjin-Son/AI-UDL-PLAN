@@ -448,54 +448,75 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
     }
 };
 
-const objectiveResponseSchema = {
+const objectiveOptionsSchema = { // 이름 변경
     type: Type.OBJECT,
     properties: {
-        objective: {
-            type: Type.STRING,
-            description: "A single, well-defined learning objective based on the topic."
+        objectives: { // 'objective' -> 'objectives' (복수)
+            type: Type.ARRAY, // 'STRING' -> 'ARRAY'
+            items: { type: Type.STRING },
+            description: "추천 학습 목표 3~5개를 담은 배열"
         }
     },
-    required: ["objective"]
+    required: ["objectives"] // 'objective' -> 'objectives'
 };
 
-export const generateLearningObjective = async (gradeLevel: string, semester: string, subject: string, topic: string): Promise<string> => {
+// [수정] 함수 이름 및 반환 타입 변경
+// generateLearningObjective -> generateLearningObjectiveOptions
+// Promise<string> -> Promise<string[]>
+export const generateLearningObjectiveOptions = async (
+    gradeLevel: string, 
+    semester: string, 
+    subject: string, 
+    topic: string,
+    // [개선] 성취기준도 함께 보내면 더 정확한 목표가 생성됩니다.
+    achievementStandards: string 
+): Promise<string[]> => {
+    
+    // [개선] 프롬프트에 성취기준 문맥 추가
+    const standardsContext = achievementStandards 
+        ? `\n- 관련 성취기준: ${achievementStandards}`
+        : '';
+
+    // [수정] 프롬프트 수정 (3~5개 요청)
     const prompt = `
         당신은 교육 목표 설정 전문가입니다.
-        아래 정보를 바탕으로, 학생들이 달성해야 할 가장 핵심적이고 구체적인 단일 학습 목표를 한 문장으로 생성해 주세요.
+        아래 정보를 바탕으로, 학생들이 달성해야 할 구체적인 학습 목표 **3~5개**를 추천해 주세요.
         학습 목표는 '학생들은 ~할 수 있다.' 또는 '~을 설명할 수 있다.'와 같은 형태로, 관찰과 측정이 가능하도록 서술해야 합니다.
 
         - 학년: ${gradeLevel} (${semester})
         - 과목: ${subject}
         - 수업 주제: ${topic}
+        ${standardsContext}
 
-        가장 대표적인 학습 목표 딱 하나만 생성해 주세요.
+        가장 대표적인 학습 목표 3~5개를 생성하여 JSON 배열 형식으로 제공해 주세요.
         제공된 스키마를 준수하는 JSON 객체로 응답을 반환해 주세요. 전체 응답은 한국어로 작성되어야 합니다.
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-2.5-pro", // (사용 중이신 모델)
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: objectiveResponseSchema,
+                responseSchema: objectiveOptionsSchema, // [수정] 변경된 스키마 사용
                 temperature: 0.8,
             },
         });
         
         const jsonText = response.text.trim();
-        const parsedResponse = JSON.parse(jsonText) as { objective: string };
+        
+        // [수정] 파싱 로직 변경 (객체에서 'objectives' 배열을 추출)
+        const parsedResponse = JSON.parse(jsonText) as { objectives: string[] };
 
-        if (!parsedResponse.objective || typeof parsedResponse.objective !== 'string') {
-            throw new Error("Invalid response format from AI: 'objective' string not found.");
+        if (!parsedResponse.objectives || !Array.isArray(parsedResponse.objectives)) {
+            throw new Error("AI 응답 형식이 올바르지 않습니다: 'objectives' 배열을 찾을 수 없습니다.");
         }
 
-        return parsedResponse.objective;
+        return parsedResponse.objectives; // [수정] 문자열 배열 반환
 
     } catch (error) {
-        console.error("Error generating learning objective:", error);
-        throw new Error("AI로부터 학습 목표를 생성하는 데 실패했습니다.");
+        console.error("Error generating learning objective options:", error); // [수정] 로그 메시지
+        throw new Error("AI로부터 학습 목표 옵션을 생성하는 데 실패했습니다."); // [수정] 오류 메시지
     }
 };
 

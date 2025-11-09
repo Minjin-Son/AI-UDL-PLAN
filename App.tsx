@@ -7,7 +7,7 @@ import {
   generateTableLessonPlan, 
   generateLessonTopics, 
   generateAchievementStandards, 
-  generateLearningObjective, 
+  generateLearningObjectiveOptions, 
   generateWorksheet, 
   generateUdlEvaluationPlan, 
   generateProcessEvaluationWorksheet,
@@ -19,6 +19,56 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import SavedPlansPanel from './components/SavedPlansPanel';
 import PrintPreview from './components/PrintPreview';
+
+interface ObjectiveModalProps {
+    options: string[];
+    onSelect: (option: string) => void;
+    onClose: () => void;
+}
+const ObjectiveModal: React.FC<ObjectiveModalProps> = ({ options, onSelect, onClose }) => (
+    <div className="no-print" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        backgroundColor: 'rgba(0,0,0,0.5)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        zIndex: 1000 
+    }}>
+        <div style={{ 
+            backgroundColor: 'white', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)', 
+            border: '1px solid #ccc', 
+            padding: '24px', 
+            borderRadius: '12px', 
+            minWidth: '400px', 
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+            <h3 style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>학습 목표 선택</h3>
+            <p style={{ color: '#555', fontSize: '14px', marginTop: 0 }}>AI가 추천하는 {options.length}개의 목표입니다. 하나를 선택하세요.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, overflowY: 'auto', flexGrow: 1 }}>
+                {options.map((option, index) => (
+                    <li 
+                        key={index} 
+                        onClick={() => onSelect(option)} 
+                        style={{ padding: '12px', border: '1px solid #eee', margin: '8px 0', cursor: 'pointer', borderRadius: '8px', transition: 'background-color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9f9f9')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                        {option}
+                    </li>
+                ))}
+            </ul>
+            <button onClick={onClose} style={{ marginTop: '20px', width: '100%', padding: '10px', cursor: 'pointer' }}>닫기</button>
+        </div>
+    </div>
+);
 
 const App: React.FC = () => {
   const [lessonInputs, setLessonInputs] = useState<LessonPlanInputs>({
@@ -53,6 +103,8 @@ const App: React.FC = () => {
 
   const [isObjectiveLoading, setIsObjectiveLoading] = useState<boolean>(false);
   const [objectiveError, setObjectiveError] = useState<string | null>(null);
+  const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
+  const [objectiveOptions, setObjectiveOptions] = useState<string[]>([]);
   
   const isGenerationCancelled = useRef(false);
 
@@ -167,7 +219,7 @@ const App: React.FC = () => {
         subject: generatedPlan.subject,
         topic: generatedPlan.lessonTitle, // UDL 지도안 제목을 주제로 사용
         duration: lessonInputs.duration, // 수업 시간은 lessonInputs 사용
-        objectives: generatedPlan.learningObjectives || '', // detailedObjectives 대신 learningObjectives 사용
+        objectives: generatedPlan.detailedObjectives.overall || lessonInputs.objectives,// [수정] objectives 가져오는 방식 변경
         unitName: lessonInputs.unitName,
         achievementStandards: generatedPlan.achievementStandard || lessonInputs.achievementStandards,
         specialNeeds: lessonInputs.specialNeeds,
@@ -205,7 +257,7 @@ const App: React.FC = () => {
         subject: generatedPlan.subject,
         topic: generatedPlan.lessonTitle,
         duration: lessonInputs.duration,
-        objectives: generatedPlan.learningObjectives || '',
+        objectives: generatedPlan.detailedObjectives.overall || lessonInputs.objectives,// [수정] objectives 가져오는 방식 변경
         unitName: lessonInputs.unitName,
         achievementStandards: generatedPlan.achievementStandard || lessonInputs.achievementStandards,
         specialNeeds: lessonInputs.specialNeeds,
@@ -243,7 +295,7 @@ const App: React.FC = () => {
         subject: generatedPlan.subject,
         topic: generatedPlan.lessonTitle,
         duration: lessonInputs.duration,
-        objectives: generatedPlan.learningObjectives || '',
+        objectives: generatedPlan.detailedObjectives.overall || lessonInputs.objectives,// [수정] objectives 가져오는 방식 변경
         unitName: lessonInputs.unitName,
         achievementStandards: generatedPlan.achievementStandard || lessonInputs.achievementStandards,
         specialNeeds: lessonInputs.specialNeeds,
@@ -280,7 +332,7 @@ const App: React.FC = () => {
         // ✅ topic을 좀 더 명확하게 가져옵니다.
         topic: generatedPlan.lessonTitle, 
         duration: lessonInputs.duration,
-        objectives: generatedPlan.learningObjectives || '',
+        objectives: generatedPlan.detailedObjectives.overall || lessonInputs.objectives, // [수정] objectives 가져오는 방식 변경
         unitName: lessonInputs.unitName,
         achievementStandards: generatedPlan.achievementStandard || lessonInputs.achievementStandards,
         specialNeeds: lessonInputs.specialNeeds,
@@ -364,7 +416,7 @@ const App: React.FC = () => {
     setIsObjectiveLoading(true);
 
     try {
-      const objective = await generateLearningObjective(lessonInputs.gradeLevel, lessonInputs.semester, lessonInputs.subject, topic);
+      const objective = await generateLearningObjectiveOptions(lessonInputs.gradeLevel, lessonInputs.semester, lessonInputs.subject, topic, lessonInputs.achievementStandards);
       setLessonInputs(prev => ({ ...prev, objectives: objective }));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '학습 목표를 생성하는 중 오류가 발생했습니다.';
@@ -412,6 +464,57 @@ const App: React.FC = () => {
     setIsPrinting(true);
   }, []);
 
+   // [추가 3] '학습 목표 추천' 버튼을 위한 새 핸들러
+  const handleRecommendObjectives = useCallback(async () => {
+    if (!lessonInputs.topic) {
+      alert('먼저 수업 주제를 입력하거나 선택해주세요.');
+      return;
+    }
+    
+    setObjectiveError(null);
+    setIsObjectiveLoading(true); 
+    
+    try {
+      const options = await generateLearningObjectiveOptions(
+        lessonInputs.gradeLevel,
+        lessonInputs.semester,
+        lessonInputs.subject,
+        lessonInputs.topic,
+        lessonInputs.achievementStandards
+      );
+
+      if (options && options.length > 0) {
+        setObjectiveOptions(options); // 모달에 표시할 옵션 설정
+        setIsObjectiveModalOpen(true); // 모달 열기
+      } else {
+        throw new Error("AI가 추천 학습 목표를 반환하지 못했습니다.");
+      }
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '학습 목표를 생성하는 중 오류가 발생했습니다.';
+      setObjectiveError(errorMessage);
+      console.error(err);
+    } finally {
+      setIsObjectiveLoading(false);
+    }
+  }, [
+    lessonInputs.gradeLevel, 
+    lessonInputs.semester, 
+    lessonInputs.subject, 
+    lessonInputs.topic, 
+    lessonInputs.achievementStandards
+  ]);
+
+  // [추가 4] 모달에서 항목 선택 시 호출될 핸들러
+  const handleSelectObjectiveFromModal = (selectedObjective: string) => {
+    setLessonInputs(prev => ({
+      ...prev,
+      objectives: selectedObjective // 선택한 목표로 폼 데이터 업데이트
+    }));
+    setIsObjectiveModalOpen(false); // 모달 닫기
+    setObjectiveOptions([]); // 옵션 초기화
+  };
+
   if (isPrinting && planToPrint) {
     return <PrintPreview 
         plan={planToPrint} 
@@ -451,6 +554,8 @@ const App: React.FC = () => {
               standardError={standardError}
               isObjectiveLoading={isObjectiveLoading}
               objectiveError={objectiveError}
+              // [추가 5] '추천' 버튼 핸들러를 FormPanel로 전달
+              onRecommendObjectives={handleRecommendObjectives}
             />
           </div>
           <div className="flex flex-col gap-8 lg:col-span-3">
@@ -491,6 +596,14 @@ const App: React.FC = () => {
       <div className="no-print">
         <Footer />
       </div>
+{/* [추가 6] 모달 렌더링 로직 */}
+      {isObjectiveModalOpen && (
+        <ObjectiveModal 
+          options={objectiveOptions}
+          onSelect={handleSelectObjectiveFromModal}
+          onClose={() => setIsObjectiveModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
