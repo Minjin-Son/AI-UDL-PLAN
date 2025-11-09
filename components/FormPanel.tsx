@@ -23,6 +23,7 @@ interface FormPanelProps {
   standardError: string | null;
   isObjectiveLoading: boolean;
   objectiveError: string | null;
+  onRecommendObjectives: () => void; // ✅ [추가 1] 이 prop을 App.tsx로부터 받습니다.
 }
 
 const FormField: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -53,6 +54,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
   standardError,
   isObjectiveLoading,
   objectiveError,
+  onRecommendObjectives, // ✅ [추가 2] prop을 구조 분해합니다.
 }) => {
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -236,17 +238,36 @@ const FormPanel: React.FC<FormPanelProps> = ({
         </FormField>
 
         <FormField label="학습 목표">
-          <textarea
-            name="objectives"
-            value={lessonInputs.objectives}
-            onChange={handleInputChange}
-            rows={4}
-            className="w-full p-2 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-slate-100 disabled:text-slate-500"
-            placeholder="추천 주제를 선택하거나 직접 입력"
-            disabled={isObjectiveLoading}
-          />
-          {objectiveError && <p className="text-red-600 text-xs mt-2">{objectiveError}</p>}
-        </FormField>
+          <div className="relative">
+            <textarea
+              name="objectives"
+              value={lessonInputs.objectives}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full p-2 pr-20 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-slate-100 disabled:text-slate-500"
+              placeholder="추천 주제를 선택하거나 직접 입력"
+              disabled={isObjectiveLoading}
+            />
+            {/* '추천' 버튼 코드 */}
+            <button
+              type="button"
+              onClick={onRecommendObjectives} // App.tsx에서 받은 핸들러 연결
+              disabled={!lessonInputs.topic || isObjectiveLoading || isLoading} // 주제가 있어야 활성화
+              className="absolute right-1 top-1.5 bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed flex items-center gap-1"
+              title="수업 주제에 맞는 학습 목표 추천받기"
+            >
+              {isObjectiveLoading ? (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                '✨ 추천'
+              )}
+            </button>
+          </div>
+          {objectiveError && <p className="text-red-600 text-xs mt-2">{objectiveError}</p>}
+        </FormField>
 
         <FormField label="특수교육대상자 하위 유형 (선택)">
           <textarea
