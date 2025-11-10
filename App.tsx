@@ -104,8 +104,7 @@ const App: React.FC = () => {
   const [isObjectiveLoading, setIsObjectiveLoading] = useState<boolean>(false);
   const [objectiveError, setObjectiveError] = useState<string | null>(null);
   const [isObjectiveModalOpen, setIsObjectiveModalOpen] = useState(false);
-  const [objectiveOptions, setObjectiveOptions] = useState<string[]>([]);
-  
+  const [objectiveSuggestions, setObjectiveSuggestions] = useState<string[]>([]);
   const isGenerationCancelled = useRef(false);
 
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
@@ -416,8 +415,21 @@ const App: React.FC = () => {
     setIsObjectiveLoading(true);
 
     try {
-      const objective = await generateLearningObjectiveOptions(lessonInputs.gradeLevel, lessonInputs.semester, lessonInputs.subject, topic, lessonInputs.achievementStandards);
-      setLessonInputs(prev => ({ ...prev, objectives: objective }));
+      // 2. AI로부터 여러 개의 옵션을 받습니다.
+      const options = await generateLearningObjectiveOptions(
+        lessonInputs.gradeLevel, 
+        lessonInputs.semester, 
+        lessonInputs.subject, 
+        topic,
+        lessonInputs.achievementStandards
+      );
+      
+      if (isGenerationCancelled.current) return;
+      
+      // 3. 전체 옵션 목록을 state에 저장하여 UI에 목록으로 표시합니다.
+      setObjectiveSuggestions(options); 
+
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '학습 목표를 생성하는 중 오류가 발생했습니다.';
       setObjectiveError(errorMessage);
@@ -484,7 +496,7 @@ const App: React.FC = () => {
       );
 
       if (options && options.length > 0) {
-        setObjectiveOptions(options); // 모달에 표시할 옵션 설정
+        setObjectiveSuggestions(options); // 모달에 표시할 옵션 설정
         setIsObjectiveModalOpen(true); // 모달 열기
       } else {
         throw new Error("AI가 추천 학습 목표를 반환하지 못했습니다.");
@@ -512,7 +524,7 @@ const App: React.FC = () => {
       objectives: selectedObjective // 선택한 목표로 폼 데이터 업데이트
     }));
     setIsObjectiveModalOpen(false); // 모달 닫기
-    setObjectiveOptions([]); // 옵션 초기화
+    setObjectiveSuggestions([]); // 옵션 초기화
   };
 
   if (isPrinting && planToPrint) {
@@ -599,7 +611,7 @@ const App: React.FC = () => {
 {/* [추가 6] 모달 렌더링 로직 */}
       {isObjectiveModalOpen && (
         <ObjectiveModal 
-          options={objectiveOptions}
+          options={objectiveSuggestions}
           onSelect={handleSelectObjectiveFromModal}
           onClose={() => setIsObjectiveModalOpen(false)}
         />
