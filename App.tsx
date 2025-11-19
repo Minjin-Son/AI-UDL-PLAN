@@ -72,7 +72,7 @@ const ObjectiveModal: React.FC<ObjectiveModalProps> = ({ options, onSelect, onCl
 
 const App: React.FC = () => {
   const [lessonInputs, setLessonInputs] = useState<LessonPlanInputs>({
-    gradeLevel: '초등학교 (3-4학년)',
+    gradeLevel: '초등학교 (4학년)',
     semester: '1학기',
     subject: '과학',
     topic: '물의 순환',
