@@ -18,7 +18,7 @@ const responseSchema = {
         },
         gradeLevel: { 
             type: Type.STRING,
-            description: "사용자가 입력한 학년 정보 (예: 초등학교 (3-4학년))"
+            description: "사용자가 입력한 학년 정보 (예: 초등학교 (4학년))"
         },
         detailedObjectives: {
             type: Type.OBJECT,
