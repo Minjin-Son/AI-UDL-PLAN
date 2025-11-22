@@ -891,39 +891,51 @@ export const reviseUDLLessonPlan = async (
 };
 
 export const generateImageForActivity = async (
-  activityTitle: string,     // ✅ 활동 제목
-  activityContent: string,   // ✅ 활동 내용
-  originalImagePrompt: string // ✅ 기존 아이디어 (스타일 가이드로 활용)
+  activityTitle: string,     // 활동 제목 (예: "물의 순환")
+  activityContent: string,   // 활동 내용 (예: "바닷물이 증발하여 구름이 됩니다...")
+  originalImagePrompt: string // UDL 지도안 생성 때 만든 아이디어
 ): Promise<string> => {
   const maxRetries = 1;
   const delayMs = 2000;
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${process.env.API_KEY}`;
+  // Imagen 모델 설정 (안정성을 위해 001 사용 권장, 002가 안 되면 001로 변경해보세요)
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${process.env.API_KEY}`;
 
-  // ✅ 프롬프트 개선 (글자 생성 방지)
+  // ✅ [수정 1] 프롬프트 엔지니어링 강화
+  // 단순 아이디어뿐만 아니라 '제목'과 '내용'을 함께 주어야 문맥에 맞는 그림이 나옵니다.
   const detailedPrompt = `
-    Create ONLY a simple, clear illustration suitable for an elementary school worksheet activity, focusing SOLELY on visual elements.
-    Style guide: "${prompt}".
-    Generate an image that visually represents the core subject or objects mentioned in the style guide.
-    Use a white background. Simple line drawings or cartoon style is preferred.
-
-    **CRITICAL INSTRUCTION: ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS, NO NUMBERS, NO SYMBOLS, NO WRITING, NO GIBBERISH inside the image.**
-    The image must contain ONLY the visual elements requested. Avoid any text-like patterns.
+    Create a simple, clear educational illustration for an elementary school worksheet.
+    
+    [Context]
+    - Activity Title: "${activityTitle}"
+    - Visual Idea: "${originalImagePrompt}"
+    
+    [Style Guide]
+    - Style: Clean line art or simple flat vector illustration.
+    - Background: Pure white background.
+    - Target Audience: Elementary school students (friendly and approachable).
+    
+    [Critical Rules]
+    - ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS, NO NUMBERS inside the image.
+    - Focus ONLY on visual elements (objects, nature, animals, people doing actions).
+    - Do not include any diagrams with labels.
   `.trim();
 
   const payload = {
-    instances: [{ prompt: detailedPrompt }], // ✅ 개선된 프롬프트 사용
+    instances: [{ prompt: detailedPrompt }],
     parameters: {
         sampleCount: 1,
-        // ✅ 부정 프롬프트 추가
-        negativePrompt: "text, writing, letters, numbers, symbols, characters, gibberish, words, labels, captions"
+        // 1:1 비율 (기본값)이 활동지에 넣기 가장 무난합니다.
+        // aspectRatio: "1:1", 
+        // ✅ 부정 프롬프트 강화
+        negativePrompt: "text, writing, letters, numbers, symbols, watermark, signature, blurry, distorted, gibberish, label, caption, diagram with text"
     }
   };
 
-
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      console.log(`🖼️ Attempting image generation with detailed prompt: "${detailedPrompt}" (Attempt ${i + 1})`);
+      console.log(`🖼️ Attempting image generation (Attempt ${i + 1})`);
+      
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -933,27 +945,33 @@ export const generateImageForActivity = async (
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Imagen API Error Response:", errorData);
-        throw new Error(`Imagen API Error (prompt: ${detailedPrompt}): ${errorData.error?.message || response.statusText}`);
+        // 429 에러(Too Many Requests)나 500 에러 등을 명확히 구분
+        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
       }
 
       const result = await response.json();
 
       if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-        console.log(`🖼️ Image generated successfully for prompt: "${detailedPrompt}"`);
+        console.log(`🖼️ Image generated successfully!`);
+        // Base64 이미지 문자열 반환
         return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
       } else {
-        console.error("Unexpected Imagen API response structure:", result);
-        throw new Error("AI로부터 이미지를 받았지만, 예상된 형식이 아닙니다.");
+        throw new Error("AI 응답에 이미지 데이터가 없습니다.");
       }
 
     } catch (error: any) {
       console.error(`Error generating image (Attempt ${i + 1}):`, error);
+      
       if (i === maxRetries) {
-        throw new Error(`AI로부터 이미지를 생성하는 데 실패했습니다: ${error.message}`);
+        // 마지막 시도 실패 시, 빈 문자열 대신 에러를 던지거나 기본 이미지를 줄 수도 있습니다.
+        // 여기서는 에러를 던져서 프론트엔드에서 처리하게 합니다.
+        throw new Error(`이미지 생성 실패: ${error.message}`);
       }
-      console.warn(`Image generation failed. Retrying in ${delayMs / 1000} seconds...`);
+      
+      // 재시도 전 대기
+      console.warn(`Retrying in ${delayMs / 1000} seconds...`);
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
-  throw new Error("AI로부터 이미지를 생성하는 데 실패했습니다.");
+  throw new Error("Unexpected error in image generation.");
 };
