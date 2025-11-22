@@ -139,7 +139,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -172,7 +172,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             `;
 
             const analysisResponse = await ai.models.generateContent({
-                model: "gemini-2.5-pro",
+                model: "gemini-3.0-pro",
                 contents: analysisPrompt,
                 config: {
                     responseMimeType: "application/json",
@@ -311,7 +311,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -357,7 +357,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -424,7 +424,7 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -494,7 +494,7 @@ export const generateLearningObjectiveOptions = async (
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro", // (사용 중이신 모델)
+            model: "gemini-3.0-pro", // (사용 중이신 모델)
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -586,7 +586,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
     
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -693,7 +693,7 @@ export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promi
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -793,7 +793,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-pro",
+            model: "gemini-3.0-pro",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -846,7 +846,7 @@ export const reviseUDLLessonPlan = async (
             // ✅ 선생님의 기존 API 호출 방식 사용
             // @ts-ignore - response 타입 추론을 위해 무시
             const response = await ai.models.generateContent({
-                model: "gemini-1.5-pro-latest", // Pro 모델 사용
+                model: "gemini-3.0-pro", // Pro 모델 사용
                 contents: prompt,
                 config: {
                     responseMimeType: "application/json",
