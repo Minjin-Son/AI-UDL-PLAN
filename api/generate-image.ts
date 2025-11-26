@@ -11,7 +11,7 @@ const generateImageForActivity = async (
   const delayMs = 2000;
   
   // Vercel 환경변수에서 API Key를 가져옵니다.
-  const apiKey = process.env.API_KEY; 
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
       throw new Error("API Key가 Vercel 환경변수에 설정되지 않았습니다.");
