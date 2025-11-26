@@ -898,8 +898,8 @@ export const generateImageForActivity = async (
   const maxRetries = 1;
   const delayMs = 2000;
 
-  // ⚠️ Imagen 모델은 001이 가장 안정적입니다. (API Key 방식)
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${process.env.API_KEY}`;
+  // (API Key 방식)
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${process.env.API_KEY}`;
 
   const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.

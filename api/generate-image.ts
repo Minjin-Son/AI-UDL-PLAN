@@ -1,6 +1,7 @@
+// api/generate-image.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-// ✅ 독립형 이미지 생성 함수
+// ✅ [핵심] src에서 가져오지 않고, 여기에 직접 함수를 넣었습니다. (독립 실행)
 const generateImageForActivity = async (
   activityTitle: string,
   activityContent: string,
@@ -9,23 +10,22 @@ const generateImageForActivity = async (
   const maxRetries = 1;
   const delayMs = 2000;
   
-  // Vercel 환경변수에서 API Key 가져오기
-  const apiKey = process.env.GEMINI_API_KEY; 
+  // Vercel 환경변수에서 API Key를 가져옵니다.
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-      throw new Error("API Key가 설정되지 않았습니다.");
+      throw new Error("API Key가 Vercetps://generativelanguagel 환경변수에 설정되지 않았습니다.");
   }
 
-  // ✅ [핵심 수정] 선생님이 찾으신 모델 ID 적용!
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${apiKey}`;
 
-  // 프롬프트 설정 (고화질 유지)
   const detailedPrompt = `
-    Create a high-quality, flat vector art illustration suitable for an elementary school worksheet.
+    Create a simple, clear educational illustration for an elementary school worksheet.
     
     [Context]
     - Activity Title: "${activityTitle}"
     - Visual Idea: "${originalImagePrompt}"
+    - Content Context: "${activityContent.substring(0, 100)}..." 
     
     [Style Guide]
     - Style: Clean line art or simple flat vector illustration.
@@ -37,21 +37,17 @@ const generateImageForActivity = async (
     - Focus ONLY on visual elements.
   `.trim();
 
-  // 데이터 전송 양식
   const payload = {
     instances: [{ prompt: detailedPrompt }],
     parameters: {
         sampleCount: 1,
-        // 이 모델은 aspectRatio(비율) 설정을 지원할 수도 있습니다. (1:1 권장)
-        aspectRatio: "1:1",
         negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
     }
   };
 
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      console.log(`🖼️ Image Gen Attempt ${i + 1} with gemini-3-pro-image-preview`);
-      
+      console.log(`🖼️ Image Gen Attempt ${i + 1}`);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,23 +56,19 @@ const generateImageForActivity = async (
 
       if (!response.ok) {
         const errorData = await response.json();
-        // 에러가 나면 로그에 자세히 찍히도록 함
-        console.error("API Error Detail:", JSON.stringify(errorData, null, 2));
-        throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
       }
 
       const result = await response.json();
 
-      // 응답 구조 확인 (모델마다 다를 수 있어서 안전하게 처리)
       if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
         return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
       } else {
-        console.error("Unexpected Response Structure:", result);
-        throw new Error("이미지 데이터가 응답에 없습니다.");
+        throw new Error("No image data in response");
       }
 
     } catch (error: any) {
-      console.error(`Error (${i + 1}):`, error);
+      console.error(`Image Gen Error (${i + 1}):`, error);
       if (i === maxRetries) throw error;
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
@@ -86,6 +78,7 @@ const generateImageForActivity = async (
 
 // --- 메인 핸들러 ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 1. POST 요청만 허용
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -97,11 +90,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: '필수 정보가 누락되었습니다.' });
     }
 
+    // 2. 위에 정의한 내부 함수 호출
     const base64Image = await generateImageForActivity(title, content, imagePrompt);
+
+    // 3. 성공 응답
     return res.status(200).json({ image: base64Image });
 
   } catch (error: any) {
-    console.error("Server Error:", error);
+    console.error("API Error:", error);
     return res.status(500).json({ error: error.message || "서버 내부 오류 발생" });
   }
 }
