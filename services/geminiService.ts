@@ -891,51 +891,45 @@ export const reviseUDLLessonPlan = async (
 };
 
 export const generateImageForActivity = async (
-  activityTitle: string,     // 활동 제목 (예: "물의 순환")
-  activityContent: string,   // 활동 내용 (예: "바닷물이 증발하여 구름이 됩니다...")
-  originalImagePrompt: string // UDL 지도안 생성 때 만든 아이디어
+  activityTitle: string,
+  activityContent: string,
+  originalImagePrompt: string
 ): Promise<string> => {
   const maxRetries = 1;
   const delayMs = 2000;
 
-  // Imagen 모델 설정 (안정성을 위해 001 사용 권장, 002가 안 되면 001로 변경해보세요)
+  // ⚠️ Imagen 모델은 001이 가장 안정적입니다. (API Key 방식)
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${process.env.API_KEY}`;
 
-  // ✅ [수정 1] 프롬프트 엔지니어링 강화
-  // 단순 아이디어뿐만 아니라 '제목'과 '내용'을 함께 주어야 문맥에 맞는 그림이 나옵니다.
   const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
     
     [Context]
     - Activity Title: "${activityTitle}"
     - Visual Idea: "${originalImagePrompt}"
+    - Content Context: "${activityContent.substring(0, 100)}..." 
     
     [Style Guide]
     - Style: Clean line art or simple flat vector illustration.
     - Background: Pure white background.
-    - Target Audience: Elementary school students (friendly and approachable).
+    - Target Audience: Elementary school students.
     
     [Critical Rules]
-    - ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS, NO NUMBERS inside the image.
-    - Focus ONLY on visual elements (objects, nature, animals, people doing actions).
-    - Do not include any diagrams with labels.
+    - ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS inside the image.
+    - Focus ONLY on visual elements.
   `.trim();
 
   const payload = {
     instances: [{ prompt: detailedPrompt }],
     parameters: {
         sampleCount: 1,
-        // 1:1 비율 (기본값)이 활동지에 넣기 가장 무난합니다.
-        // aspectRatio: "1:1", 
-        // ✅ 부정 프롬프트 강화
-        negativePrompt: "text, writing, letters, numbers, symbols, watermark, signature, blurry, distorted, gibberish, label, caption, diagram with text"
+        negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
     }
   };
 
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      console.log(`🖼️ Attempting image generation (Attempt ${i + 1})`);
-      
+      console.log(`🖼️ Image Gen Attempt ${i + 1}`);
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -944,34 +938,22 @@ export const generateImageForActivity = async (
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Imagen API Error Response:", errorData);
-        // 429 에러(Too Many Requests)나 500 에러 등을 명확히 구분
         throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
       }
 
       const result = await response.json();
 
-      if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-        console.log(`🖼️ Image generated successfully!`);
-        // Base64 이미지 문자열 반환
+      if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
         return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
       } else {
-        throw new Error("AI 응답에 이미지 데이터가 없습니다.");
+        throw new Error("No image data in response");
       }
 
     } catch (error: any) {
-      console.error(`Error generating image (Attempt ${i + 1}):`, error);
-      
-      if (i === maxRetries) {
-        // 마지막 시도 실패 시, 빈 문자열 대신 에러를 던지거나 기본 이미지를 줄 수도 있습니다.
-        // 여기서는 에러를 던져서 프론트엔드에서 처리하게 합니다.
-        throw new Error(`이미지 생성 실패: ${error.message}`);
-      }
-      
-      // 재시도 전 대기
-      console.warn(`Retrying in ${delayMs / 1000} seconds...`);
+      console.error(`Image Gen Error (${i + 1}):`, error);
+      if (i === maxRetries) throw error;
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
-  throw new Error("Unexpected error in image generation.");
+  throw new Error("Image generation failed");
 };
