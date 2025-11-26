@@ -17,7 +17,7 @@ const generateImageForActivity = async (
       throw new Error("API Key가 Vercel 환경변수에 설정되지 않았습니다.");
   }
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
 
   const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
