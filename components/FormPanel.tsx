@@ -59,22 +59,22 @@ const FormPanel: React.FC<FormPanelProps> = ({
 
   const handleSuggestionClick = (suggestion: string) => {
     const currentNeeds = lessonInputs.specialNeeds || '';
-    
+
     let newValue;
     const needsArray = currentNeeds.split(', ').filter(s => s.trim() !== '');
 
     if (!needsArray.includes(suggestion)) {
-        needsArray.push(suggestion);
+      needsArray.push(suggestion);
     }
     newValue = needsArray.join(', ');
-    
+
     const event = {
       target: {
         name: 'specialNeeds',
         value: newValue,
       },
     } as React.ChangeEvent<HTMLTextAreaElement>;
-  
+
     handleInputChange(event);
   };
 
@@ -96,7 +96,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
             {gradeLevels.map(level => <option key={level} value={level}>{level}</option>)}
           </select>
         </FormField>
-        
+
         <FormField label="학기">
           <select
             name="semester"
@@ -118,7 +118,7 @@ const FormPanel: React.FC<FormPanelProps> = ({
             {subjects.map(sub => <option key={sub} value={sub}>{sub}</option>)}
           </select>
         </FormField>
-        
+
         <FormField label="단원명">
           <input
             type="text"
@@ -159,24 +159,24 @@ const FormPanel: React.FC<FormPanelProps> = ({
           </div>
 
           {topicError && <p className="text-red-600 text-xs mt-2">{topicError}</p>}
-          
+
           {topicSuggestions.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               <p className="text-xs text-slate-500 w-full">추천 주제:</p>
-                {topicSuggestions.map(suggestion => (
-                    <button
-                        key={suggestion}
-                        type="button"
-                        onClick={() => onTopicSelect(suggestion)}
-                        className="bg-indigo-50 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full hover:bg-indigo-100 transition-colors"
-                    >
-                        {suggestion}
-                    </button>
-                ))}
+              {topicSuggestions.map(suggestion => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => onTopicSelect(suggestion)}
+                  className="bg-indigo-50 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full hover:bg-indigo-100 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
           )}
         </FormField>
-        
+
         <FormField label="성취기준">
           <div className="relative">
             <textarea
@@ -205,27 +205,27 @@ const FormPanel: React.FC<FormPanelProps> = ({
             </button>
           </div>
           {standardError && <p className="text-red-600 text-xs mt-2">{standardError}</p>}
-          
+
           {standardSuggestions.length > 0 && (
             <div className="flex flex-col gap-2 mt-2">
               <p className="text-xs text-slate-500 w-full">추천 성취기준: (클릭하여 여러 개 선택)</p>
-                {standardSuggestions.map(suggestion => {
-                    const isSelected = selectedStandards.includes(suggestion);
-                    return (
-                        <button
-                            key={suggestion}
-                            type="button"
-                            onClick={() => onStandardToggle(suggestion)}
-                            className={`text-left text-xs font-medium p-2 rounded-md transition-colors ${isSelected ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-800 hover:bg-indigo-100'}`}
-                        >
-                            {suggestion}
-                        </button>
-                    );
-                })}
+              {standardSuggestions.map(suggestion => {
+                const isSelected = selectedStandards.includes(suggestion);
+                return (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => onStandardToggle(suggestion)}
+                    className={`text-left text-xs font-medium p-2 rounded-md transition-colors ${isSelected ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-800 hover:bg-indigo-100'}`}
+                  >
+                    {suggestion}
+                  </button>
+                );
+              })}
             </div>
           )}
         </FormField>
-        
+
         <FormField label="수업 시간">
           <input
             type="text"
@@ -233,41 +233,41 @@ const FormPanel: React.FC<FormPanelProps> = ({
             value={lessonInputs.duration}
             onChange={handleInputChange}
             className="w-full p-2 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-            placeholder="예: 45분"
+            placeholder="예: 40분"
           />
         </FormField>
 
         <FormField label="학습 목표">
-          <div className="relative">
-            <textarea
-              name="objectives"
-              value={lessonInputs.objectives}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full p-2 pr-20 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-slate-100 disabled:text-slate-500"
-              placeholder="추천 주제를 선택하거나 직접 입력"
-              disabled={isObjectiveLoading}
-            />
-            {/* '추천' 버튼 코드 */}
-            <button
-              type="button"
-              onClick={onRecommendObjectives} // App.tsx에서 받은 핸들러 연결
-              disabled={!lessonInputs.topic || isObjectiveLoading || isLoading} // 주제가 있어야 활성화
-              className="absolute right-1 top-1.5 bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed flex items-center gap-1"
-              title="수업 주제에 맞는 학습 목표 추천받기"
-            >
-              {isObjectiveLoading ? (
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                '✨ 추천'
-              )}
-            </button>
-          </div>
-          {objectiveError && <p className="text-red-600 text-xs mt-2">{objectiveError}</p>}
-        </FormField>
+          <div className="relative">
+            <textarea
+              name="objectives"
+              value={lessonInputs.objectives}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full p-2 pr-20 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-slate-100 disabled:text-slate-500"
+              placeholder="추천 주제를 선택하거나 직접 입력"
+              disabled={isObjectiveLoading}
+            />
+            {/* '추천' 버튼 코드 */}
+            <button
+              type="button"
+              onClick={onRecommendObjectives} // App.tsx에서 받은 핸들러 연결
+              disabled={!lessonInputs.topic || isObjectiveLoading || isLoading} // 주제가 있어야 활성화
+              className="absolute right-1 top-1.5 bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed flex items-center gap-1"
+              title="수업 주제에 맞는 학습 목표 추천받기"
+            >
+              {isObjectiveLoading ? (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                '✨ 추천'
+              )}
+            </button>
+          </div>
+          {objectiveError && <p className="text-red-600 text-xs mt-2">{objectiveError}</p>}
+        </FormField>
 
         <FormField label="특수교육대상자 하위 유형 (선택)">
           <textarea
@@ -300,8 +300,8 @@ const FormPanel: React.FC<FormPanelProps> = ({
             rows={4}
             className="w-full p-2 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             placeholder="예: (전체) 학습 동기가 높으나 수학에 대한 자신감이 부족함. (특수) A학생은 시각 자료에 강점이 있으나 긴 문장 읽기에 어려움이 있음."
-          />
-          <p className="text-xs text-slate-500 mt-1">학급의 전반적인 분위기나 학생들의 특성(강점, 약점, 흥미)을 구체적으로 작성하면 더 맞춤화된 지도안이 생성됩니다.</p>
+          />
+          <p className="text-xs text-slate-500 mt-1">학급의 전반적인 분위기나 학생들의 특성(강점, 약점, 흥미)을 구체적으로 작성하면 더 맞춤화된 지도안이 생성됩니다.</p>
         </FormField>
 
         {isLoading ? (
@@ -311,8 +311,8 @@ const FormPanel: React.FC<FormPanelProps> = ({
             className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-300 flex items-center justify-center"
           >
             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             생성 중지하기
           </button>
