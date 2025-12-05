@@ -3,11 +3,11 @@ import { GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, Pro
 const escapeHtml = (text: string | undefined): string => {
     if (typeof text !== 'string') return '';
     return text
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 };
 
 const getUdlPlanAsHtml = (plan: GeneratedLessonPlan): string => {
@@ -45,7 +45,7 @@ const getTablePlanAsHtml = (plan: TableLessonPlan): string => {
         <p><strong>준비물:</strong> ${escapeHtml(plan.metadata.materials.join(', '))}</p>
       </div>
     `;
-    
+
     const steps = `
       <div>
         <h3>교수·학습 과정</h3>
@@ -199,7 +199,7 @@ const getProcessEvaluationAsHtml = (plan: ProcessEvaluationWorksheet): string =>
 };
 
 const generateFullHtml = (title: string, mainHeader: string, subHeader: string, content: string): string => {
-  const styles = `
+    const styles = `
     <style>
       /* Word-specific CSS */
       @page WordSection1 {
@@ -228,7 +228,7 @@ const generateFullHtml = (title: string, mainHeader: string, subHeader: string, 
     </style>
   `;
 
-  return `
+    return `
     <!DOCTYPE html>
     <html lang="ko" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
     <head>
@@ -257,7 +257,7 @@ const generateFullHtml = (title: string, mainHeader: string, subHeader: string, 
 };
 
 export const exportPlanAsWord = (
-    plan: GeneratedLessonPlan, 
+    plan: GeneratedLessonPlan,
     view: 'udl' | 'table' | 'worksheet' | 'udlEvaluation' | 'processEvaluation'
 ) => {
     let contentHtml = '';
@@ -265,7 +265,7 @@ export const exportPlanAsWord = (
     let subTitle = ``;
     let docTitle = plan.lessonTitle;
 
-    switch(view) {
+    switch (view) {
         case 'udl':
             contentHtml = getUdlPlanAsHtml(plan);
             subTitle = `UDL 지도안 (${plan.gradeLevel} ${plan.subject})`;
@@ -295,7 +295,7 @@ export const exportPlanAsWord = (
             }
             break;
         case 'processEvaluation':
-             if (plan.processEvaluationWorksheet) {
+            if (plan.processEvaluationWorksheet) {
                 contentHtml = getProcessEvaluationAsHtml(plan.processEvaluationWorksheet);
                 mainTitle = plan.processEvaluationWorksheet.title;
                 subTitle = `과정중심평가지`;
@@ -308,7 +308,7 @@ export const exportPlanAsWord = (
         alert('내보낼 내용이 없습니다.');
         return;
     }
-    
+
     const fullHtml = generateFullHtml(docTitle, mainTitle, subTitle, contentHtml);
 
     const blob = new Blob(['\uFEFF', fullHtml], { type: 'application/msword;charset=utf-8' });
@@ -316,6 +316,77 @@ export const exportPlanAsWord = (
     const link = document.createElement('a');
     link.href = url;
     link.download = `${docTitle.replace(/[\\/:*?"<>|]/g, '')}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+export const exportPlanAsHwp = (
+    plan: GeneratedLessonPlan,
+    view: 'udl' | 'table' | 'worksheet' | 'udlEvaluation' | 'processEvaluation'
+) => {
+    let contentHtml = '';
+    let mainTitle = plan.lessonTitle;
+    let subTitle = ``;
+    let docTitle = plan.lessonTitle;
+
+    switch (view) {
+        case 'udl':
+            contentHtml = getUdlPlanAsHtml(plan);
+            subTitle = `UDL 지도안 (${plan.gradeLevel} ${plan.subject})`;
+            break;
+        case 'table':
+            if (plan.tablePlan) {
+                contentHtml = getTablePlanAsHtml(plan.tablePlan);
+                mainTitle = plan.tablePlan.metadata.lessonTitle;
+                subTitle = `교수·학습 과정안`;
+                docTitle = mainTitle;
+            }
+            break;
+        case 'worksheet':
+            if (plan.worksheet) {
+                contentHtml = getWorksheetAsHtml(plan.worksheet);
+                mainTitle = plan.worksheet.title;
+                subTitle = `수준별 활동지`;
+                docTitle = mainTitle;
+            }
+            break;
+        case 'udlEvaluation':
+            if (plan.udlEvaluation) {
+                contentHtml = getUdlEvaluationAsHtml(plan.udlEvaluation);
+                mainTitle = plan.udlEvaluation.title;
+                subTitle = `UDL 평가 계획`;
+                docTitle = mainTitle;
+            }
+            break;
+        case 'processEvaluation':
+            if (plan.processEvaluationWorksheet) {
+                contentHtml = getProcessEvaluationAsHtml(plan.processEvaluationWorksheet);
+                mainTitle = plan.processEvaluationWorksheet.title;
+                subTitle = `과정중심평가지`;
+                docTitle = mainTitle;
+            }
+            break;
+    }
+
+    if (!contentHtml) {
+        alert('내보낼 내용이 없습니다.');
+        return;
+    }
+
+    // HWP supports HTML import effectively. We can reuse the same HTML structure.
+    const fullHtml = generateFullHtml(docTitle, mainTitle, subTitle, contentHtml);
+
+    // Using application/x-hwp or application/hwp might trigger HWP directly if registered,
+    // but often application/octet-stream with .hwp extension is the safest bet for forcing download correctly as 'hwp'.
+    // However, trying a specific one first to be semantically correct.
+    // 'application/force-download' is another option if this fails to open in HWP.
+    const blob = new Blob(['\uFEFF', fullHtml], { type: 'application/x-hwp;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${docTitle.replace(/[\\/:*?"<>|]/g, '')}.hwp`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
