@@ -174,13 +174,30 @@ const App: React.FC = () => {
   }, []);
 
   const handleSavePlan = useCallback(() => {
-    if (!generatedPlan || generatedPlan.id) return;
-    const newPlanToSave = {
-      ...generatedPlan,
-      id: `${generatedPlan.lessonTitle}-${Date.now()}`
-    };
-    setSavedPlans(prev => [newPlanToSave, ...prev]);
-    setGeneratedPlan(newPlanToSave);
+    if (!generatedPlan) return;
+
+    // 이미 저장된 지도안이면 목록에서 업데이트, 아니면 새로 추가
+    if (generatedPlan.id) {
+      setSavedPlans(prev => {
+        const exists = prev.some(p => p.id === generatedPlan.id);
+        if (exists) {
+          // 존재하면 업데이트
+          return prev.map(p => p.id === generatedPlan.id ? generatedPlan : p);
+        } else {
+          // ID는 있지만 목록에 없으면(혹시 모를 예외) 추가
+          return [generatedPlan, ...prev];
+        }
+      });
+      // 이미 ID가 있으므로 generatedPlan 상태는 그대로 유지 (업데이트 됨)
+    } else {
+      // 새 지도안 저장
+      const newPlanToSave = {
+        ...generatedPlan,
+        id: `${generatedPlan.lessonTitle}-${Date.now()}`
+      };
+      setSavedPlans(prev => [newPlanToSave, ...prev]);
+      setGeneratedPlan(newPlanToSave);
+    }
   }, [generatedPlan]);
 
   const handleDeletePlan = useCallback((idToDelete: string) => {

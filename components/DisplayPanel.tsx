@@ -186,14 +186,12 @@ const PlanDisplay: React.FC<{
           <div className="flex items-center space-x-2 flex-shrink-0 no-print">
             {!isEditing ? (
               <>
-                {!isSaved && (
-                  <button
-                    onClick={onSavePlan}
-                    className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors duration-200 hover:bg-indigo-700 shadow-sm mr-2"
-                  >
-                    저장하기
-                  </button>
-                )}
+                <button
+                  onClick={onSavePlan}
+                  className="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors duration-200 hover:bg-indigo-700 shadow-sm mr-2"
+                >
+                  저장하기
+                </button>
                 <div ref={exportMenuRef} className="relative inline-block text-left">
                   <button
                     onClick={() => setIsExportMenuOpen(prev => !prev)}
