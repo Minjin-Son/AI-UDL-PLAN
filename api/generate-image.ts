@@ -9,15 +9,15 @@ const generateImageForActivity = async (
 ): Promise<string> => {
   const maxRetries = 1;
   const delayMs = 2000;
-  
+
   // Vercel 환경변수에서 API Key를 가져옵니다.
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-      throw new Error("API Key가 Vercetps://generativelanguagel 환경변수에 설정되지 않았습니다.");
+    throw new Error("API Key가 Vercetps://generativelanguagel 환경변수에 설정되지 않았습니다.");
   }
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${apiKey}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
 
   const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
@@ -40,8 +40,8 @@ const generateImageForActivity = async (
   const payload = {
     instances: [{ prompt: detailedPrompt }],
     parameters: {
-        sampleCount: 1,
-        negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
+      sampleCount: 1,
+      negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
     }
   };
 
