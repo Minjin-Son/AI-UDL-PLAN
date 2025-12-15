@@ -1,23 +1,23 @@
 // api/generate-image.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { GoogleGenAI } from "@google/genai";
 
-// ✅ [핵심] src에서 가져오지 않고, 여기에 직접 함수를 넣었습니다. (독립 실행)
+// ✅ [핵심] GoogleGenAI SDK를 사용하여 구현
 const generateImageForActivity = async (
   activityTitle: string,
   activityContent: string,
   originalImagePrompt: string
 ): Promise<string> => {
-  const maxRetries = 1;
-  const delayMs = 2000;
 
   // Vercel 환경변수에서 API Key를 가져옵니다.
-  const apiKey = process.env.GEMINI_API_KEY;
+  // 로컬 테스트 시 process.env가 없을 수 있으므로 주의 (이전 코드 로직 유지)
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
   if (!apiKey) {
-    throw new Error("API Key가 Vercetps://generativelanguagel 환경변수에 설정되지 않았습니다.");
+    throw new Error("API Key가 환경변수에 설정되지 않았습니다.");
   }
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+  const ai = new GoogleGenAI({ apiKey });
 
   const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
@@ -37,43 +37,68 @@ const generateImageForActivity = async (
     - Focus ONLY on visual elements.
   `.trim();
 
-  const payload = {
-    instances: [{ prompt: detailedPrompt }],
-    parameters: {
-      sampleCount: 1,
-      negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
+  // Nano Banana Pro (Gemini 3 Pro Image) 모델 사용
+  // 모델 ID: gemini-3-pro-image-preview
+  const modelId = "gemini-3-pro-image-preview";
+
+  try {
+    console.log(`🖼️ Image Gen Request to ${modelId}`);
+
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: detailedPrompt }
+          ]
+        }
+      ],
+      config: {
+        // Nano Banana Pro does not support responseMimeType: "image/png" in generateContent config
+        sampleCount: 1,
+      } as any // 타입 정의가 최신이 아닐 수 있어 any로 우회
+    });
+
+    // 응답 처리
+    // Gemini Image generation returns Inline Data or Byte code
+    // SDK의 응답 구조 확인 필요. 보통 response.text()는 텍스트를 주지만, 이미지는 parts 안에 inlineData로 올 수 있음.
+
+    // SDK 최신 버전에 따라 다를 수 있으므로, raw response 구조를 확인하며 처리
+
+    // 1. 만약 text로 base64가 오는 경우 (일부 모델)
+    // 2. candidates[0].content.parts[0].inlineData (표준 멀티모달 반환)
+
+    // @google/genai SDK의 경우:
+    // response.candidates[0].content.parts[0].inlineData
+
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+      throw new Error("No candidates returned");
     }
-  };
 
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      console.log(`🖼️ Image Gen Attempt ${i + 1}`);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    const firstPart = candidates[0].content?.parts?.[0];
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
-        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-      } else {
-        throw new Error("No image data in response");
-      }
-
-    } catch (error: any) {
-      console.error(`Image Gen Error (${i + 1}):`, error);
-      if (i === maxRetries) throw error;
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+    if (firstPart?.inlineData?.data) {
+      return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
     }
+
+    // 만약 text 필드에 바이너리가 아닌 텍스트(거절 메시지 등)가 있다면
+    if (firstPart?.text) {
+      console.warn("Image generation returned text instead of image:", firstPart.text);
+      throw new Error(`Image generation failed: ${firstPart.text}`);
+    }
+
+    throw new Error("No image data found in response");
+
+  } catch (error: any) {
+    console.error("Image Gen Error:", error);
+    // 상세한 에러 로깅
+    if (error.response) {
+      console.error("Error Response:", JSON.stringify(error.response, null, 2));
+    }
+    throw error;
   }
-  throw new Error("Image generation failed");
 };
 
 // --- 메인 핸들러 ---
