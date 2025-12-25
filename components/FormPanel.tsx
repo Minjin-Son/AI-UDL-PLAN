@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LessonPlanInputs } from '../types';
 import { SPECIAL_NEEDS_SUGGESTIONS } from '../constants';
 
@@ -25,6 +25,117 @@ interface FormPanelProps {
   objectiveError: string | null;
   onRecommendObjectives: () => void; // ✅ [추가 1] 이 prop을 App.tsx로부터 받습니다.
 }
+
+
+interface Preset {
+  name: string;
+  content: string;
+}
+
+const PresetManager: React.FC<{
+  currentValue: string;
+  onLoad: (content: string) => void;
+}> = ({ currentValue, onLoad }) => {
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('udl-student-characteristics-presets');
+    if (saved) {
+      try {
+        setPresets(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse presets', e);
+      }
+    }
+  }, []);
+
+  const savePresets = (newPresets: Preset[]) => {
+    setPresets(newPresets);
+    localStorage.setItem('udl-student-characteristics-presets', JSON.stringify(newPresets));
+  };
+
+  const handleSave = () => {
+    if (!currentValue.trim()) {
+      alert('저장할 내용이 없습니다.');
+      return;
+    }
+    const name = prompt('이 특성 세트의 이름을 입력하세요 (예: 5학년 1반):');
+    if (!name) return;
+
+    if (presets.some(p => p.name === name)) {
+      if (!confirm(`'${name}'(이)라는 이름이 이미 존재합니다. 덮어쓰시겠습니까?`)) {
+        return;
+      }
+      const newPresets = presets.map(p => p.name === name ? { name, content: currentValue } : p);
+      savePresets(newPresets);
+    } else {
+      savePresets([...presets, { name, content: currentValue }]);
+    }
+    setSelectedPreset(name);
+  };
+
+  const handleLoad = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const name = e.target.value;
+    setSelectedPreset(name);
+    if (!name) return;
+
+    const preset = presets.find(p => p.name === name);
+    if (preset) {
+      if (currentValue && !confirm('현재 입력된 내용이 삭제되고 선택한 특성이 불러와집니다. 계속하시겠습니까?')) {
+        e.target.value = selectedPreset; // Revert selection
+        return;
+      }
+      onLoad(preset.content);
+    }
+  };
+
+  const handleDelete = () => {
+    if (!selectedPreset) return;
+    if (!confirm(`'${selectedPreset}' 특성 세트를 삭제하시겠습니까?`)) return;
+
+    const newPresets = presets.filter(p => p.name !== selectedPreset);
+    savePresets(newPresets);
+    setSelectedPreset('');
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-2 bg-slate-50 p-2 rounded-md border border-slate-200">
+      <span className="text-xs font-bold text-slate-600">💾 특성 저장소:</span>
+      <select
+        value={selectedPreset}
+        onChange={handleLoad}
+        className="text-xs p-1 border border-slate-300 rounded bg-white focus:ring-indigo-500 focus:border-indigo-500"
+      >
+        <option value="">-- 불러오기 --</option>
+        {presets.map(p => (
+          <option key={p.name} value={p.name}>{p.name}</option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={handleSave}
+        className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200 border border-indigo-200 transition-colors"
+        title="현재 입력된 내용을 새로운 프리셋으로 저장합니다."
+      >
+        저장
+      </button>
+      {selectedPreset && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 border border-red-200 transition-colors"
+          title="선택된 프리셋을 삭제합니다."
+        >
+          삭제
+        </button>
+      )}
+      <span className="text-[10px] text-slate-400 ml-auto hidden sm:inline-block">
+        *개인 정보(실명 등)는 입력하지 마세요.
+      </span>
+    </div>
+  );
+};
 
 const FormField: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div>
@@ -293,8 +404,21 @@ const FormPanel: React.FC<FormPanelProps> = ({
         </FormField>
 
         <FormField label="우리 반 학생들의 전체적인 특성 및 특수교육대상자의 특성(선택)">
+          <PresetManager
+            currentValue={lessonInputs.studentCharacteristics || ''}
+            onLoad={(content) => {
+              const event = {
+                target: {
+                  name: 'studentCharacteristics',
+                  value: content,
+                },
+              } as React.ChangeEvent<HTMLTextAreaElement>;
+              handleInputChange(event);
+            }}
+          />
           <textarea
             name="studentCharacteristics"
+
             value={lessonInputs.studentCharacteristics}
             onChange={handleInputChange}
             rows={4}
