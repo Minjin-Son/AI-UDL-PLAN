@@ -62,7 +62,8 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     // UDL 원칙의 *인덱스* 찾기
     const engagementPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("참여"));
     const representationPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("표상"));
-    const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행"));
+    // [수정] '실행' 뿐만 아니라 '행동'이나 '표현'이 포함된 경우도 찾도록 조건 추가
+    const actionPrincipleIndex = plan.udlPrinciples.findIndex(p => p.principle.includes("실행") || p.principle.includes("행동") || p.principle.includes("표현"));
 
     // 인덱스를 사용하여 전략 배열 가져오기
     const engagementStrategies = engagementPrincipleIndex > -1 ? plan.udlPrinciples[engagementPrincipleIndex].strategies : [];
@@ -75,9 +76,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
             <table className="udl-table w-full border-collapse">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
                 <colgroup>
-                    <col style={{ width: '10%' }} /> {/* 단계 */}
-                    <col style={{ width: '22%' }} /> {/* 구분 */}
-                    <col style={{ width: '68%' }} /> {/* 내용 */}
+                    <col style={{ width: '8%' }} /> {/* 단계 */}
+                    <col style={{ width: '12%' }} /> {/* 구분 */}
+                    <col style={{ width: '80%' }} /> {/* 내용 */}
                 </colgroup>
                 <thead>
                     {/* [수정됨] header를 5열에서 3열로 변경 */}
