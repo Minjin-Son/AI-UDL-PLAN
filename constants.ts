@@ -8,8 +8,8 @@ export const GRADE_LEVELS: string[] = [
 ];
 
 export const SEMESTERS: string[] = [
-    '1학기',
-    '2학기',
+  '1학기',
+  '2학기',
 ];
 
 export const SUBJECTS: string[] = [
@@ -34,11 +34,11 @@ export const SPECIAL_NEEDS_SUGGESTIONS: string[] = [
   '지적장애 학생',
   '지체장애 학생',
   '정서·행동장애 학생',
-  '자폐성장애 학생', 
+  '자폐성장애 학생',
   '의사소통장애 학생',
   '학습장애 학생',
   '건강장애 학생',
   '발달 지체 학생',
   '경계선 지능 학생',
-  'ADHD 성향 학생'
-];
+  'ADHD 성향 학생',
+  '다문화 학생'];
