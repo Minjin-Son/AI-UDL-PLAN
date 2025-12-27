@@ -1,41 +1,41 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TableLessonPlan, LessonPlanTableRow, EvaluationCriterion } from '../types';
 
-interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
 
 const AutoGrowTextarea: React.FC<AutoGrowTextareaProps> = (props) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'inherit';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [props.value]);
+    React.useLayoutEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'inherit';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [props.value]);
 
-  return <textarea ref={textareaRef} {...props} />;
+    return <textarea ref={textareaRef} {...props} />;
 };
 
 interface EditableFieldProps {
-  isEditing: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  multiline?: boolean;
-  className?: string;
-  textClassName?: string;
+    isEditing: boolean;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    multiline?: boolean;
+    className?: string;
+    textClassName?: string;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, multiline = true, className = '', textClassName = '' }) => {
-  if (isEditing) {
-    const commonProps = {
-      value,
-      onChange,
-      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
-    };
-    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
-  }
-  return <div className={textClassName}>{value}</div>;
+    if (isEditing) {
+        const commonProps = {
+            value,
+            onChange,
+            className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
+        };
+        return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
+    }
+    return <div className={textClassName}>{value}</div>;
 };
 
 interface TableDisplayProps {
@@ -50,15 +50,15 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
     const resizingColIndex = useRef<number | null>(null);
     const startX = useRef(0);
     const startWidths = useRef<number[]>([]);
-    
+
     useEffect(() => {
         if (tableRef.current && colWidths.length === 0) {
             const ths = Array.from(tableRef.current.querySelectorAll('thead th'));
             const totalWidth = tableRef.current.offsetWidth;
             if (totalWidth > 0) {
-              // FIX: Cast element to HTMLElement to access offsetWidth
-              const widths = ths.map(th => ((th as HTMLElement).offsetWidth / totalWidth) * 100);
-              setColWidths(widths);
+                // FIX: Cast element to HTMLElement to access offsetWidth
+                const widths = ths.map(th => ((th as HTMLElement).offsetWidth / totalWidth) * 100);
+                setColWidths(widths);
             }
         }
     }, [plan, colWidths.length]);
@@ -72,10 +72,10 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
         startWidths.current = ths.map(th => (th as HTMLElement).offsetWidth);
         document.body.classList.add('resizing');
     }, []);
-    
+
     const handleMouseMove = useCallback((event: MouseEvent) => {
         if (resizingColIndex.current === null || !tableRef.current) return;
-        
+
         const dx = event.clientX - startX.current;
         const currentIndex = resizingColIndex.current;
         const nextIndex = currentIndex + 1;
@@ -92,10 +92,10 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
 
         const newCurrentWidthPercent = ((currentThWidth + dx) / totalWidth) * (newColWidths[currentIndex] + newColWidths[nextIndex]);
         const newNextWidthPercent = ((nextThWidth - dx) / totalWidth) * (newColWidths[currentIndex] + newColWidths[nextIndex]);
-        
+
         newColWidths[currentIndex] = newCurrentWidthPercent;
         newColWidths[nextIndex] = newNextWidthPercent;
-        
+
         setColWidths(newColWidths);
     }, [colWidths]);
 
@@ -117,7 +117,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
     const handleMetadataChange = (field: keyof TableLessonPlan['metadata'], value: string | string[]) => {
         onPlanChange({ ...plan, metadata: { ...plan.metadata, [field]: value } });
     };
-    
+
     const handleStepChange = (stepIndex: number, field: keyof LessonPlanTableRow, value: string | string[]) => {
         const newSteps = JSON.parse(JSON.stringify(plan.steps));
         newSteps[stepIndex][field] = value;
@@ -129,11 +129,23 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
         newSteps[stepIndex][listName][itemIndex] = value;
         onPlanChange({ ...plan, steps: newSteps });
     };
-    
+
     const handleEvaluationCriterionChange = (critIndex: number, field: keyof EvaluationCriterion, value: string) => {
         const newCriteria = JSON.parse(JSON.stringify(plan.evaluationPlan.criteria));
         newCriteria[critIndex][field] = value;
         onPlanChange({ ...plan, evaluationPlan: { ...plan.evaluationPlan, criteria: newCriteria } });
+    };
+
+    const handleMoveStep = (index: number, direction: 'up' | 'down') => {
+        if (direction === 'up' && index > 0) {
+            const newSteps = [...plan.steps];
+            [newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]];
+            onPlanChange({ ...plan, steps: newSteps });
+        } else if (direction === 'down' && index < plan.steps.length - 1) {
+            const newSteps = [...plan.steps];
+            [newSteps[index], newSteps[index + 1]] = [newSteps[index + 1], newSteps[index]];
+            onPlanChange({ ...plan, steps: newSteps });
+        }
     };
 
     return (
@@ -146,7 +158,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                     textClassName="text-2xl font-bold text-slate-800"
                 />
             </div>
-            
+
             <table className="w-full border-collapse border border-slate-300 text-sm text-slate-700">
                 <tbody>
                     <tr className="bg-slate-50">
@@ -158,14 +170,14 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                     <tr>
                         <th className="border p-2 text-left font-semibold bg-slate-50">수업 주제</th>
                         <td colSpan={3} className="border p-2">
-                             <EditableField
+                            <EditableField
                                 isEditing={isEditing}
                                 value={plan.metadata.topic}
                                 onChange={(e) => handleMetadataChange('topic', e.target.value)}
                             />
                         </td>
                     </tr>
-                     <tr>
+                    <tr>
                         <th className="border p-2 text-left font-semibold bg-slate-50">학습 목표</th>
                         <td colSpan={3} className="border p-2">
                             <EditableField
@@ -175,19 +187,19 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                             />
                         </td>
                     </tr>
-                     <tr>
+                    <tr>
                         <th className="border p-2 text-left font-semibold bg-slate-50">수업 시간</th>
                         <td className="border p-2">
-                             <EditableField
+                            <EditableField
                                 isEditing={isEditing}
                                 value={plan.metadata.duration}
                                 onChange={(e) => handleMetadataChange('duration', e.target.value)}
                                 multiline={false}
                             />
                         </td>
-                         <th className="border p-2 text-left font-semibold bg-slate-50">준비물</th>
+                        <th className="border p-2 text-left font-semibold bg-slate-50">준비물</th>
                         <td className="border p-2">
-                             <EditableField
+                            <EditableField
                                 isEditing={isEditing}
                                 value={plan.metadata.materials.join(', ')}
                                 onChange={(e) => handleMetadataChange('materials', e.target.value.split(',').map(s => s.trim()))}
@@ -231,7 +243,27 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                 <tbody>
                     {plan.steps.map((step, stepIndex) => (
                         <tr key={stepIndex}>
-                            <td className="border p-2 align-top">
+                            <td className="border p-2 align-top relative group">
+                                {isEditing && (
+                                    <div className="absolute right-1 top-1 flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleMoveStep(stepIndex, 'up')}
+                                            disabled={stepIndex === 0}
+                                            className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30"
+                                            title="위로 이동"
+                                        >
+                                            ▲
+                                        </button>
+                                        <button
+                                            onClick={() => handleMoveStep(stepIndex, 'down')}
+                                            disabled={stepIndex === plan.steps.length - 1}
+                                            className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30"
+                                            title="아래로 이동"
+                                        >
+                                            ▼
+                                        </button>
+                                    </div>
+                                )}
                                 <EditableField
                                     isEditing={isEditing}
                                     value={step.phase}
@@ -256,7 +288,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                                 <ul className="list-disc list-inside pl-2 mb-2">
                                     {step.teacherActivities.map((activity, i) => (
                                         <li key={i}>
-                                             <EditableField
+                                            <EditableField
                                                 isEditing={isEditing}
                                                 value={activity}
                                                 onChange={(e) => handleListChange(stepIndex, 'teacherActivities', i, e.target.value)}
@@ -281,7 +313,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                             </td>
                             <td className="border p-2 align-top">
                                 <ul className="list-none p-0">
-                                     {step.materialsAndNotes.map((note, i) => (
+                                    {step.materialsAndNotes.map((note, i) => (
                                         <li key={i}>
                                             <EditableField
                                                 isEditing={isEditing}
@@ -297,9 +329,9 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                     ))}
                 </tbody>
             </table>
-            
+
             <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4">평가 계획</h3>
-             {plan.evaluationPlan.criteria.map((criterion, critIndex) => (
+            {plan.evaluationPlan.criteria.map((criterion, critIndex) => (
                 <div key={critIndex} className="mb-4">
                     <table className="w-full border-collapse border border-slate-300 text-sm text-slate-700">
                         <tbody>
@@ -316,7 +348,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                             <tr>
                                 <th className="border p-2 text-left font-semibold bg-slate-50">평가 방법</th>
                                 <td className="border p-2">
-                                     <EditableField
+                                    <EditableField
                                         isEditing={isEditing}
                                         value={criterion.method}
                                         onChange={(e) => handleEvaluationCriterionChange(critIndex, 'method', e.target.value)}
@@ -326,13 +358,13 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                         </tbody>
                     </table>
                     <table className="w-full border-collapse border border-slate-300 text-sm mt-[-1px] text-slate-700">
-                         <thead className="bg-slate-100">
-                             <tr>
+                        <thead className="bg-slate-100">
+                            <tr>
                                 <th className="border p-2 w-1/4">평가 수준</th>
                                 <th className="border p-2">평가 기준</th>
-                             </tr>
-                         </thead>
-                         <tbody>
+                            </tr>
+                        </thead>
+                        <tbody>
                             <tr>
                                 <td className="border p-2 font-semibold">잘함</td>
                                 <td className="border p-2">
@@ -363,7 +395,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                                     />
                                 </td>
                             </tr>
-                         </tbody>
+                        </tbody>
                     </table>
                 </div>
             ))}
