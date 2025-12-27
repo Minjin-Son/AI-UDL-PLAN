@@ -41,4 +41,4 @@ export const SPECIAL_NEEDS_SUGGESTIONS: string[] = [
   '발달 지체 학생',
   '경계선 지능 학생',
   'ADHD 성향 학생',
-  '다문화 학생'];
+  '다문화 학생 중 한국어를 어려워하는 학생'];
