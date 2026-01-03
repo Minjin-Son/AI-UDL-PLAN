@@ -85,6 +85,18 @@ const PlanDisplay: React.FC<{
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   // ✅ 글자 크기 조절 상태 추가 (기본값 15)
   const [fontSize, setFontSize] = useState<number>(15);
+  // ✅ 폰트 패밀리 상태 추가
+  const [fontFamily, setFontFamily] = useState<string>('inherit');
+
+  const fontOptions = [
+    { name: '기본 (Sans-serif)', value: 'inherit' },
+    { name: 'Noto Sans (고딕)', value: "'Noto Sans KR', sans-serif" },
+    { name: 'Noto Serif (명조)', value: "'Noto Serif KR', serif" },
+    { name: '나눔손글씨', value: "'Nanum Pen Script', cursive" },
+    { name: '고운돋움', value: "'Gowun Dodum', sans-serif" },
+    { name: '고운바탕', value: "'Gowun Batang', serif" },
+  ];
+
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -186,6 +198,22 @@ const PlanDisplay: React.FC<{
             </div>
           </div>
           <div className="flex items-center space-x-2 flex-shrink-0 no-print">
+            {/* ✅ 폰트 선택 컨트롤 */}
+            <div className="mr-2">
+              <select
+                value={fontFamily}
+                onChange={(e) => setFontFamily(e.target.value)}
+                className="bg-slate-100 border border-slate-200 text-slate-700 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 block p-1.5"
+                style={{ fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}
+              >
+                {fontOptions.map((option) => (
+                  <option key={option.name} value={option.value} style={{ fontFamily: option.value !== 'inherit' ? option.value : undefined }}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* ✅ 글자 크기 조절 컨트롤 */}
             <div className="flex items-center space-x-1 mr-2 bg-slate-100 rounded-lg p-1 border border-slate-200">
               <button
@@ -319,6 +347,7 @@ const PlanDisplay: React.FC<{
               isEditing={isEditing}
               onPlanChange={handlePlanChange}
               fontSize={fontSize}
+              fontFamily={fontFamily}
             />
             {/* ✅ 2. UDL 지도안을 보여줄 때, 멀티미디어 자료가 있다면 함께 보여줍니다. */}
             {editablePlan.multimedia_resources && (
@@ -344,6 +373,7 @@ const PlanDisplay: React.FC<{
                   handlePlanChange({ ...editablePlan, tablePlan: updatedTablePlan })
                 }
                 fontSize={fontSize}
+                fontFamily={fontFamily}
               />
             ) : (
               <div className="text-center p-8 text-slate-500">표 형식 지도안을 불러오는 중입니다. 잠시 후에도 표시되지 않으면 다시 시도해 주세요.</div>
@@ -368,6 +398,7 @@ const PlanDisplay: React.FC<{
                   handlePlanChange({ ...editablePlan, worksheet: updatedWorksheet })
                 }
                 fontSize={fontSize}
+                fontFamily={fontFamily}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
@@ -404,6 +435,7 @@ const PlanDisplay: React.FC<{
                   handlePlanChange({ ...editablePlan, udlEvaluation: updatedUdlEvaluation })
                 }
                 fontSize={fontSize}
+                fontFamily={fontFamily}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
@@ -440,6 +472,7 @@ const PlanDisplay: React.FC<{
                   handlePlanChange({ ...editablePlan, processEvaluationWorksheet: updatedProcessEvaluation })
                 }
                 fontSize={fontSize}
+                fontFamily={fontFamily}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">

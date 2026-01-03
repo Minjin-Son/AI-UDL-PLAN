@@ -37,9 +37,10 @@ interface UDLDisplayProps {
     isEditing: boolean;
     onPlanChange: (updatedPlan: GeneratedLessonPlan) => void;
     fontSize?: number;
+    fontFamily?: string;
 }
 
-const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
+const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize, fontFamily }) => {
 
     if (!plan || !plan.udlPrinciples) {
         return <div className="text-center p-8 bg-white rounded-lg shadow-md">지도안 데이터를 불러오는 중입니다...</div>;
@@ -75,7 +76,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
     const labelTextSize = fontSize ? '' : 'text-xs';
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
+        <div className="bg-white p-6 rounded-lg shadow-md" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
             <table className="udl-table w-full border-collapse">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}

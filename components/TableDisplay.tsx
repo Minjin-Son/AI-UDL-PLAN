@@ -43,9 +43,10 @@ interface TableDisplayProps {
     isEditing: boolean;
     onPlanChange: (updatedPlan: TableLessonPlan) => void;
     fontSize?: number;
+    fontFamily?: string;
 }
 
-const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
+const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize, fontFamily }) => {
     const tableRef = useRef<HTMLTableElement>(null);
     const [colWidths, setColWidths] = useState<number[]>([]);
     const resizingColIndex = useRef<number | null>(null);
@@ -152,7 +153,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
     const tableTextSize = fontSize ? '' : 'text-sm';
 
     return (
-        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
             <div className="prose max-w-none">
                 <EditableField
                     isEditing={isEditing}

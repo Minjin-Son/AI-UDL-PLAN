@@ -5,8 +5,9 @@ interface WorksheetDisplayProps {
   plan: Worksheet;
   isEditing: boolean;
   fontSize?: number;
+  fontFamily?: string;
 }
-const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fontSize }) => {
+const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fontSize, fontFamily }) => {
 
   // ✅ [상태 관리] 생성된 이미지와 로딩 상태를 저장
   const [generatedImages, setGeneratedImages] = useState<{ [key: string]: string }>({});
@@ -59,7 +60,7 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
   const descTextSize = fontSize ? '' : 'text-sm';
 
   return (
-    <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
+    <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
       {/* 제목 및 설명 */}
       <div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">{plan.title}</h2>

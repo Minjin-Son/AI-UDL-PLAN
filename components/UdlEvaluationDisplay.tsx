@@ -44,9 +44,10 @@ interface UdlEvaluationDisplayProps {
     isEditing: boolean;
     onPlanChange: (updatedPlan: UdlEvaluationPlan) => void;
     fontSize?: number;
+    fontFamily?: string;
 }
 
-const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
+const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize, fontFamily }) => {
 
     const handleFieldChange = (field: keyof UdlEvaluationPlan, value: string) => {
         onPlanChange({ ...plan, [field]: value });
@@ -81,7 +82,7 @@ const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEdi
     const badgeTextSize = fontSize ? '' : 'text-xs';
 
     return (
-        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
             <div>
                 <EditableField
                     isEditing={isEditing}

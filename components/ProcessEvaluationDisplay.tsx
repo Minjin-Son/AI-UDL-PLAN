@@ -43,9 +43,10 @@ interface ProcessEvaluationDisplayProps {
     isEditing: boolean;
     onPlanChange: (updatedPlan: ProcessEvaluationWorksheet) => void;
     fontSize?: number;
+    fontFamily?: string;
 }
 
-const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
+const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize, fontFamily }) => {
     const tableRef = useRef<HTMLTableElement>(null);
     const [colWidths, setColWidths] = useState<number[]>([]);
     const resizingColIndex = useRef<number | null>(null);
@@ -141,7 +142,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
     const contentTextSize = fontSize ? '' : 'text-sm';
 
     return (
-        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
             <div>
                 <EditableField
                     isEditing={isEditing}
