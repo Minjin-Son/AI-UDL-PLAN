@@ -1,41 +1,41 @@
 import React from 'react';
 import { UdlEvaluationPlan, EvaluationTask, EvaluationTaskLevel } from '../types';
 
-interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
 
 const AutoGrowTextarea: React.FC<AutoGrowTextareaProps> = (props) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'inherit';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [props.value]);
+    React.useLayoutEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'inherit';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [props.value]);
 
-  return <textarea ref={textareaRef} {...props} />;
+    return <textarea ref={textareaRef} {...props} />;
 };
 
 interface EditableFieldProps {
-  isEditing: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  multiline?: boolean;
-  className?: string;
-  textClassName?: string;
+    isEditing: boolean;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    multiline?: boolean;
+    className?: string;
+    textClassName?: string;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, multiline = true, className = '', textClassName = '' }) => {
-  if (isEditing) {
-    const commonProps = {
-      value,
-      onChange,
-      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
-    };
-    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
-  }
-  return <div className={textClassName}>{value}</div>;
+    if (isEditing) {
+        const commonProps = {
+            value,
+            onChange,
+            className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
+        };
+        return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
+    }
+    return <div className={textClassName}>{value}</div>;
 };
 
 
@@ -43,9 +43,10 @@ interface UdlEvaluationDisplayProps {
     plan: UdlEvaluationPlan;
     isEditing: boolean;
     onPlanChange: (updatedPlan: UdlEvaluationPlan) => void;
+    fontSize?: number;
 }
 
-const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange }) => {
+const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
 
     const handleFieldChange = (field: keyof UdlEvaluationPlan, value: string) => {
         onPlanChange({ ...plan, [field]: value });
@@ -68,15 +69,19 @@ const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEdi
         'proficient': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800' },
         'basic': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800' },
     };
-    
+
     const levelNames = {
         'advanced': '상',
         'proficient': '중',
         'basic': '하',
     };
 
+    const contentTextSize = fontSize ? '' : 'text-sm';
+    const descTextSize = fontSize ? '' : 'text-sm';
+    const badgeTextSize = fontSize ? '' : 'text-xs';
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
             <div>
                 <EditableField
                     isEditing={isEditing}
@@ -101,48 +106,48 @@ const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEdi
                             onChange={(e) => handleTaskChange(taskIndex, 'taskTitle', e.target.value)}
                             textClassName="text-lg font-bold text-slate-800"
                         />
-                         <EditableField
+                        <EditableField
                             isEditing={isEditing}
                             value={task.taskDescription}
                             onChange={(e) => handleTaskChange(taskIndex, 'taskDescription', e.target.value)}
-                            textClassName="text-sm text-slate-600 mt-1 mb-3"
+                            textClassName={`${descTextSize} text-slate-600 mt-1 mb-3`}
                         />
                         <div className="flex flex-wrap gap-2 mb-4">
                             {task.udlConnections.map((conn, connIndex) => (
-                                <span key={connIndex} className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                                <span key={connIndex} className={`bg-indigo-100 text-indigo-800 ${badgeTextSize} font-medium px-2.5 py-1 rounded-full`}>
                                     {conn}
                                 </span>
                             ))}
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {(Object.keys(levelNames) as Array<keyof typeof levelNames>).map(levelKey => {
                                 const levelData = task.levels[levelKey];
                                 const colors = levelColors[levelKey];
                                 return (
-                                <div key={levelKey} className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}>
-                                    <h5 className={`font-bold text-md mb-2 ${colors.text}`}>수준: {levelNames[levelKey]}</h5>
-                                    <div className="space-y-3 text-sm">
-                                        <div>
-                                            <p className="font-semibold text-slate-700 mb-1">과제 설명</p>
-                                            <EditableField
-                                                isEditing={isEditing}
-                                                value={levelData.description}
-                                                onChange={(e) => handleTaskLevelChange(taskIndex, levelKey, 'description', e.target.value)}
-                                                textClassName="text-slate-600"
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-700 mb-1">평가 기준</p>
-                                            <EditableField
-                                                isEditing={isEditing}
-                                                value={levelData.criteria}
-                                                onChange={(e) => handleTaskLevelChange(taskIndex, levelKey, 'criteria', e.target.value)}
-                                                textClassName="text-slate-600"
-                                            />
+                                    <div key={levelKey} className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}>
+                                        <h5 className={`font-bold text-md mb-2 ${colors.text}`}>수준: {levelNames[levelKey]}</h5>
+                                        <div className={`space-y-3 ${contentTextSize}`}>
+                                            <div>
+                                                <p className="font-semibold text-slate-700 mb-1">과제 설명</p>
+                                                <EditableField
+                                                    isEditing={isEditing}
+                                                    value={levelData.description}
+                                                    onChange={(e) => handleTaskLevelChange(taskIndex, levelKey, 'description', e.target.value)}
+                                                    textClassName="text-slate-600"
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-700 mb-1">평가 기준</p>
+                                                <EditableField
+                                                    isEditing={isEditing}
+                                                    value={levelData.criteria}
+                                                    onChange={(e) => handleTaskLevelChange(taskIndex, levelKey, 'criteria', e.target.value)}
+                                                    textClassName="text-slate-600"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 );
                             })}
                         </div>

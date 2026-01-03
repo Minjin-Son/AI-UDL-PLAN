@@ -83,6 +83,8 @@ const PlanDisplay: React.FC<{
   const [view, setView] = useState<'udl' | 'table' | 'worksheet' | 'udlEvaluation' | 'processEvaluation'>('udl');
   const [editablePlan, setEditablePlan] = useState<GeneratedLessonPlan>(plan);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  // ✅ 글자 크기 조절 상태 추가 (기본값 15)
+  const [fontSize, setFontSize] = useState<number>(15);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -184,6 +186,27 @@ const PlanDisplay: React.FC<{
             </div>
           </div>
           <div className="flex items-center space-x-2 flex-shrink-0 no-print">
+            {/* ✅ 글자 크기 조절 컨트롤 */}
+            <div className="flex items-center space-x-1 mr-2 bg-slate-100 rounded-lg p-1 border border-slate-200">
+              <button
+                onClick={() => setFontSize(prev => Math.max(10, prev - 1))}
+                className="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded transition-all font-bold text-sm"
+                title="글자 줄이기"
+              >
+                -
+              </button>
+              <div className="flex flex-col items-center justify-center w-8 px-1">
+                <span className="text-xs text-slate-400 leading-none" style={{ fontSize: '0.65rem' }}>크기</span>
+                <span className="text-sm font-bold text-slate-700 leading-none">{fontSize}</span>
+              </div>
+              <button
+                onClick={() => setFontSize(prev => Math.max(10, prev + 1))}
+                className="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm rounded transition-all font-bold text-sm"
+                title="글자 키우기"
+              >
+                +
+              </button>
+            </div>
             {!isEditing ? (
               <>
                 <button
@@ -295,6 +318,7 @@ const PlanDisplay: React.FC<{
               plan={editablePlan}
               isEditing={isEditing}
               onPlanChange={handlePlanChange}
+              fontSize={fontSize}
             />
             {/* ✅ 2. UDL 지도안을 보여줄 때, 멀티미디어 자료가 있다면 함께 보여줍니다. */}
             {editablePlan.multimedia_resources && (
@@ -319,6 +343,7 @@ const PlanDisplay: React.FC<{
                 onPlanChange={(updatedTablePlan) =>
                   handlePlanChange({ ...editablePlan, tablePlan: updatedTablePlan })
                 }
+                fontSize={fontSize}
               />
             ) : (
               <div className="text-center p-8 text-slate-500">표 형식 지도안을 불러오는 중입니다. 잠시 후에도 표시되지 않으면 다시 시도해 주세요.</div>
@@ -342,6 +367,7 @@ const PlanDisplay: React.FC<{
                 onPlanChange={(updatedWorksheet) =>
                   handlePlanChange({ ...editablePlan, worksheet: updatedWorksheet })
                 }
+                fontSize={fontSize}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
@@ -377,6 +403,7 @@ const PlanDisplay: React.FC<{
                 onPlanChange={(updatedUdlEvaluation) =>
                   handlePlanChange({ ...editablePlan, udlEvaluation: updatedUdlEvaluation })
                 }
+                fontSize={fontSize}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
@@ -412,6 +439,7 @@ const PlanDisplay: React.FC<{
                 onPlanChange={(updatedProcessEvaluation) =>
                   handlePlanChange({ ...editablePlan, processEvaluationWorksheet: updatedProcessEvaluation })
                 }
+                fontSize={fontSize}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">

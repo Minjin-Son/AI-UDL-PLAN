@@ -1,50 +1,51 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ProcessEvaluationWorksheet, EvaluationItem } from '../types';
 
-interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
 
 const AutoGrowTextarea: React.FC<AutoGrowTextareaProps> = (props) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'inherit';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [props.value]);
+    React.useLayoutEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'inherit';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [props.value]);
 
-  return <textarea ref={textareaRef} {...props} />;
+    return <textarea ref={textareaRef} {...props} />;
 };
 
 interface EditableFieldProps {
-  isEditing: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  multiline?: boolean;
-  className?: string;
-  textClassName?: string;
+    isEditing: boolean;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    multiline?: boolean;
+    className?: string;
+    textClassName?: string;
 }
 
 const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, multiline = true, className = '', textClassName = '' }) => {
-  if (isEditing) {
-    const commonProps = {
-      value,
-      onChange,
-      className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
-    };
-    return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
-  }
-  return <div className={textClassName}>{value}</div>;
+    if (isEditing) {
+        const commonProps = {
+            value,
+            onChange,
+            className: `w-full p-1 rounded-md bg-indigo-50 border border-indigo-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`,
+        };
+        return multiline ? <AutoGrowTextarea {...commonProps} /> : <textarea {...commonProps} rows={1} />;
+    }
+    return <div className={textClassName}>{value}</div>;
 };
 
 interface ProcessEvaluationDisplayProps {
     plan: ProcessEvaluationWorksheet;
     isEditing: boolean;
     onPlanChange: (updatedPlan: ProcessEvaluationWorksheet) => void;
+    fontSize?: number;
 }
 
-const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange }) => {
+const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
     const tableRef = useRef<HTMLTableElement>(null);
     const [colWidths, setColWidths] = useState<number[]>([]);
     const resizingColIndex = useRef<number | null>(null);
@@ -56,9 +57,9 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             const ths = Array.from(tableRef.current.querySelectorAll('thead th'));
             const totalWidth = tableRef.current.offsetWidth;
             if (totalWidth > 0) {
-              // FIX: Cast element to HTMLElement to access offsetWidth
-              const widths = ths.map(th => ((th as HTMLElement).offsetWidth / totalWidth) * 100);
-              setColWidths(widths);
+                // FIX: Cast element to HTMLElement to access offsetWidth
+                const widths = ths.map(th => ((th as HTMLElement).offsetWidth / totalWidth) * 100);
+                setColWidths(widths);
             }
         }
     }, [plan, colWidths.length]);
@@ -75,7 +76,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
         if (resizingColIndex.current === null || !tableRef.current) return;
-        
+
         const dx = event.clientX - startX.current;
         const currentIndex = resizingColIndex.current;
         const nextIndex = currentIndex + 1;
@@ -89,13 +90,13 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
 
         const newColWidths = [...colWidths];
         const totalWidth = currentThWidth + nextThWidth;
-        
+
         const newCurrentWidthPercent = ((currentThWidth + dx) / totalWidth) * (newColWidths[currentIndex] + newColWidths[nextIndex]);
         const newNextWidthPercent = ((nextThWidth - dx) / totalWidth) * (newColWidths[currentIndex] + newColWidths[nextIndex]);
 
         newColWidths[currentIndex] = newCurrentWidthPercent;
         newColWidths[nextIndex] = newNextWidthPercent;
-        
+
         setColWidths(newColWidths);
     }, [colWidths]);
 
@@ -112,13 +113,13 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [handleMouseMove, handleMouseUp]);
-    
+
     const handleFieldChange = (field: keyof ProcessEvaluationWorksheet, value: string) => {
         onPlanChange({ ...plan, [field]: value });
     };
-    
+
     const handleStudentInfoChange = (field: keyof ProcessEvaluationWorksheet['studentInfo'], value: string) => {
-        onPlanChange({ ...plan, studentInfo: { ...plan.studentInfo, [field]: value }});
+        onPlanChange({ ...plan, studentInfo: { ...plan.studentInfo, [field]: value } });
     };
 
     const handleItemChange = (itemIndex: number, field: keyof EvaluationItem, value: any) => {
@@ -134,21 +135,23 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
     };
 
     const handleFeedbackChange = (field: keyof ProcessEvaluationWorksheet['overallFeedback'], value: string) => {
-        onPlanChange({ ...plan, overallFeedback: { ...plan.overallFeedback, [field]: value }});
+        onPlanChange({ ...plan, overallFeedback: { ...plan.overallFeedback, [field]: value } });
     };
 
+    const contentTextSize = fontSize ? '' : 'text-sm';
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
             <div>
-                 <EditableField
+                <EditableField
                     isEditing={isEditing}
                     value={plan.title}
                     onChange={(e) => handleFieldChange('title', e.target.value)}
                     textClassName="text-2xl font-bold text-slate-800 mb-4 text-center"
                 />
             </div>
-            
-            <div className="border border-slate-300 rounded-lg p-3 text-sm text-slate-700">
+
+            <div className={`border border-slate-300 rounded-lg p-3 ${contentTextSize} text-slate-700`}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
                     <div className="flex items-baseline justify-center">
                         <EditableField isEditing={isEditing} value={plan.studentInfo.grade} onChange={(e) => handleStudentInfoChange('grade', e.target.value)} multiline={false} textClassName="font-semibold mr-1" />
@@ -177,7 +180,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
                 />
             </div>
 
-            <table ref={tableRef} className="w-full border-collapse border border-slate-300 text-sm resize-table table-fixed text-slate-700">
+            <table ref={tableRef} className={`w-full border-collapse border border-slate-300 ${contentTextSize} resize-table table-fixed text-slate-700`}>
                 <colgroup>
                     {colWidths.length > 0 ? (
                         colWidths.map((width, i) => <col key={i} style={{ width: `${width}%` }} />)
@@ -211,7 +214,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
                     {plan.evaluationItems.map((item, itemIndex) => (
                         <tr key={itemIndex}>
                             <td className="border p-2 align-top font-semibold">
-                                 <EditableField
+                                <EditableField
                                     isEditing={isEditing}
                                     value={item.criterion}
                                     onChange={(e) => handleItemChange(itemIndex, 'criterion', e.target.value)}
@@ -224,14 +227,14 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
                                     onChange={(e) => handleItemLevelChange(itemIndex, 'excellent', e.target.value)}
                                 />
                             </td>
-                             <td className="border p-2 align-top">
+                            <td className="border p-2 align-top">
                                 <EditableField
                                     isEditing={isEditing}
                                     value={item.levels.good}
                                     onChange={(e) => handleItemLevelChange(itemIndex, 'good', e.target.value)}
                                 />
                             </td>
-                             <td className="border p-2 align-top">
+                            <td className="border p-2 align-top">
                                 <EditableField
                                     isEditing={isEditing}
                                     value={item.levels.needsImprovement}
@@ -246,7 +249,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             <div className="space-y-6">
                 <div>
                     <h4 className="font-bold text-slate-800 mb-2">교사 종합 의견</h4>
-                     <div className="border border-slate-300 p-2 rounded-md min-h-[100px] text-slate-700">
+                    <div className="border border-slate-300 p-2 rounded-md min-h-[100px] text-slate-700">
                         <EditableField
                             isEditing={isEditing}
                             value={plan.overallFeedback.teacherComment}
@@ -254,10 +257,10 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
                         />
                     </div>
                 </div>
-                 <div>
+                <div>
                     <h4 className="font-bold text-slate-800 mb-2">자기 성찰</h4>
                     <div className="border border-slate-300 p-2 rounded-md min-h-[100px] text-slate-700">
-                         <EditableField
+                        <EditableField
                             isEditing={isEditing}
                             value={plan.overallFeedback.studentReflection}
                             onChange={(e) => handleFeedbackChange('studentReflection', e.target.value)}

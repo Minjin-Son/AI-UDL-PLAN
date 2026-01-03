@@ -36,9 +36,10 @@ interface UDLDisplayProps {
     plan: GeneratedLessonPlan;
     isEditing: boolean;
     onPlanChange: (updatedPlan: GeneratedLessonPlan) => void;
+    fontSize?: number;
 }
 
-const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }) => {
+const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
 
     if (!plan || !plan.udlPrinciples) {
         return <div className="text-center p-8 bg-white rounded-lg shadow-md">지도안 데이터를 불러오는 중입니다...</div>;
@@ -70,8 +71,11 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
     const representationStrategies = representationPrincipleIndex > -1 ? plan.udlPrinciples[representationPrincipleIndex].strategies : [];
     const actionStrategies = actionPrincipleIndex > -1 ? plan.udlPrinciples[actionPrincipleIndex].strategies : [];
 
+    const contentTextSize = fontSize ? '' : 'text-sm';
+    const labelTextSize = fontSize ? '' : 'text-xs';
+
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
             <table className="udl-table w-full border-collapse">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
@@ -98,7 +102,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.achievementStandard || ''}
                                 onChange={(e) => onPlanChange({ ...plan, achievementStandard: e.target.value })}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -109,7 +113,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.detailedObjectives?.overall || ''}
                                 onChange={(e) => handleObjectiveChange('overall', e.target.value)}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -120,7 +124,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.detailedObjectives?.some || ''}
                                 onChange={(e) => handleObjectiveChange('some', e.target.value)}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -131,7 +135,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.detailedObjectives?.few || ''}
                                 onChange={(e) => handleObjectiveChange('few', e.target.value)}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -144,7 +148,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.contextAnalysis || ''}
                                 onChange={(e) => onPlanChange({ ...plan, contextAnalysis: e.target.value })}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -155,7 +159,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                 isEditing={isEditing}
                                 value={plan.learnerAnalysis || ''}
                                 onChange={(e) => onPlanChange({ ...plan, learnerAnalysis: e.target.value })}
-                                textClassName="text-sm"
+                                textClassName={contentTextSize}
                             />
                         </td>
                     </tr>
@@ -177,32 +181,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                     <tr>
                                         <td className="align-top p-2 border-r border-slate-300">
                                             {engagementStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>
@@ -210,32 +217,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                         </td>
                                         <td className="align-top p-2 border-r border-slate-300">
                                             {representationStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>
@@ -243,32 +253,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                         </td>
                                         <td className="align-top p-2">
                                             {actionStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>
@@ -295,32 +308,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                     <tr>
                                         <td className="align-top p-2 border-r border-slate-300">
                                             {engagementStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(engagementPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>
@@ -328,32 +344,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                         </td>
                                         <td className="align-top p-2 border-r border-slate-300">
                                             {representationStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(representationPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>
@@ -361,32 +380,35 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange }
                                         </td>
                                         <td className="align-top p-2">
                                             {actionStrategies.map((strat, index) => (
-                                                <div key={index} className="mb-4 text-sm border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
+                                                <div key={index} className="mb-4 border-b border-slate-100 pb-2 last:border-0 last:mb-0 last:pb-0">
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">지침:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>지침:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.guideline}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'guideline', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div className="mb-1">
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">전략:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>전략:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.strategy}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'strategy', e.target.value)}
                                                             className="text-slate-700 bg-slate-50"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-semibold text-indigo-600 block mb-0.5">예시:</span>
+                                                        <span className={`${labelTextSize} font-semibold text-indigo-600 block mb-0.5`}>예시:</span>
                                                         <EditableField
                                                             isEditing={isEditing}
                                                             value={strat.example}
                                                             onChange={(e) => handleStrategyChange(actionPrincipleIndex, index, 'example', e.target.value)}
                                                             className="text-slate-900"
+                                                            textClassName={contentTextSize}
                                                         />
                                                     </div>
                                                 </div>

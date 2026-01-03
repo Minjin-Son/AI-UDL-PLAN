@@ -42,9 +42,10 @@ interface TableDisplayProps {
     plan: TableLessonPlan;
     isEditing: boolean;
     onPlanChange: (updatedPlan: TableLessonPlan) => void;
+    fontSize?: number;
 }
 
-const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChange }) => {
+const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChange, fontSize }) => {
     const tableRef = useRef<HTMLTableElement>(null);
     const [colWidths, setColWidths] = useState<number[]>([]);
     const resizingColIndex = useRef<number | null>(null);
@@ -148,8 +149,10 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
         }
     };
 
+    const tableTextSize = fontSize ? '' : 'text-sm';
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined }}>
             <div className="prose max-w-none">
                 <EditableField
                     isEditing={isEditing}
@@ -159,7 +162,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                 />
             </div>
 
-            <table className="w-full border-collapse border border-slate-300 text-sm text-slate-700">
+            <table className={`w-full border-collapse border border-slate-300 ${tableTextSize} text-slate-700`}>
                 <tbody>
                     <tr className="bg-slate-50">
                         <th className="border p-2 w-1/6 text-left font-semibold">과목</th>
@@ -210,7 +213,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
             </table>
 
             <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4">교수·학습 과정</h3>
-            <table ref={tableRef} className="w-full border-collapse border border-slate-300 text-sm resize-table table-fixed text-slate-700">
+            <table ref={tableRef} className={`w-full border-collapse border border-slate-300 ${tableTextSize} resize-table table-fixed text-slate-700`}>
                 <colgroup>
                     {colWidths.length > 0 ? (
                         colWidths.map((width, i) => <col key={i} style={{ width: `${width}%` }} />)
@@ -333,7 +336,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
             <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4">평가 계획</h3>
             {plan.evaluationPlan.criteria.map((criterion, critIndex) => (
                 <div key={critIndex} className="mb-4">
-                    <table className="w-full border-collapse border border-slate-300 text-sm text-slate-700">
+                    <table className={`w-full border-collapse border border-slate-300 ${tableTextSize} text-slate-700`}>
                         <tbody>
                             <tr className="bg-slate-50">
                                 <th className="border p-2 w-1/4 text-left font-semibold">평가 내용</th>
@@ -357,7 +360,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                             </tr>
                         </tbody>
                     </table>
-                    <table className="w-full border-collapse border border-slate-300 text-sm mt-[-1px] text-slate-700">
+                    <table className={`w-full border-collapse border border-slate-300 ${tableTextSize} mt-[-1px] text-slate-700`}>
                         <thead className="bg-slate-100">
                             <tr>
                                 <th className="border p-2 w-1/4">평가 수준</th>
