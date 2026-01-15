@@ -125,40 +125,15 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
   return (
     <div className="space-y-8 font-sans" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
 
-      {/* 1. Header Table Section (Metadata) */}
+      {/* 1. Header Table Section (Metadata) - Hidden by user request */}
+      {/* 
       {plan.metadata && (
-        <div className="border-2 border-orange-300 rounded-lg overflow-hidden shadow-sm">
-          <div className="flex">
-            <div className={`${headerBgColor} w-24 flex items-center justify-center border-r border-orange-200 p-2 font-bold ${headerTextColor}`}>
-              학습<br />정보
-            </div>
-            <div className="flex-1">
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr className="border-b border-orange-100">
-                    <th className="bg-orange-50 p-2 text-left w-20 border-r border-orange-100 font-semibold text-slate-600">단원</th>
-                    <td className="p-2 border-r border-orange-100">{plan.metadata.unit}</td>
-                    <th className="bg-orange-50 p-2 text-left w-20 border-r border-orange-100 font-semibold text-slate-600">학년</th>
-                    <td className="p-2">{plan.metadata.grade} {plan.metadata.semester}</td>
-                  </tr>
-                  <tr className="border-b border-orange-100">
-                    <th className="bg-orange-50 p-2 text-left border-r border-orange-100 font-semibold text-slate-600">주제</th>
-                    <td className="p-2" colSpan={3}>{plan.metadata.topic}</td>
-                  </tr>
-                  <tr>
-                    <th className="bg-orange-50 p-2 text-left border-r border-orange-100 font-semibold text-slate-600">학습목표</th>
-                    <td className="p-2" colSpan={3}>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-700">
-                        {plan.metadata.objectives.map((obj, i) => <li key={i}>{obj}</li>)}
-                      </ul>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div className="border-2 border-orange-300 rounded-lg overflow-hidden shadow-sm">
+             ... (hidden) ...
           </div>
-        </div>
-      )}
+      )} 
+      */}
+
 
       {/* Main Title if not redundant */}
       <h2 className="text-3xl font-extrabold text-center text-slate-800 border-b-2 border-slate-200 pb-4 mb-8">
