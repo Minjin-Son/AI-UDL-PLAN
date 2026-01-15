@@ -6,76 +6,76 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // AI가 생성할 기본 지도안의 데이터 설계도
 const responseSchema = {
-    type: Type.OBJECT,
-    properties: {
-        lessonTitle: { 
+    type: Type.OBJECT,
+    properties: {
+        lessonTitle: {
             type: Type.STRING,
             description: "학생들의 흥미를 유발할 만한 창의적인 수업 주제"
         },
-        subject: { 
+        subject: {
             type: Type.STRING,
             description: "사용자가 입력한 교과목 이름 (예: 과학, 수학)"
         },
-        gradeLevel: { 
+        gradeLevel: {
             type: Type.STRING,
             description: "사용자가 입력한 학년 정보 (예: 초등학교 (4학년))"
         },
-        detailedObjectives: {
-            type: Type.OBJECT,
+        detailedObjectives: {
+            type: Type.OBJECT,
             description: "모든 학생, 일부 학생, 소수 학생을 위한 세분화된 학습 목표",
-            properties: {
-                overall: { 
+            properties: {
+                overall: {
                     type: Type.STRING,
                     description: "모든 학생이 성취해야 할 핵심 목표"
                 },
-                some: { 
+                some: {
                     type: Type.STRING,
                     description: "일부 학생들이 추가적으로 성취할 수 있는 목표"
                 },
-                few: { 
+                few: {
                     type: Type.STRING,
                     description: "학습에 어려움이 있거나 빠른 학생들을 위한 개별화된 목표"
                 },
-            },
-            required: ["overall", "some", "few"]
-        },
-        contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
-        learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
-        udlPrinciples: {
+            },
+            required: ["overall", "some", "few"]
+        },
+        contextAnalysis: { type: Type.STRING, description: "수업 환경 및 맥락 분석 (2-3문장)" },
+        learnerAnalysis: { type: Type.STRING, description: "대상 학년의 발달 단계를 고려한 학습자 분석 (2-3문장)" },
+        udlPrinciples: {
             type: Type.ARRAY,
             description: "UDL의 세 가지 원칙(참여, 표상, 실행)에 따른 구체적인 전략들",
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    principle: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    strategies: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                guideline: { type: Type.STRING },
-                                strategy: { type: Type.STRING },
-                                example: { type: Type.STRING },
-                            },
-                             required: ["guideline", "strategy", "example"]
-                        }
-                    }
-                },
-                required: ["principle", "description", "strategies"]
-            }
-        },
-        assessment: {
-            type: Type.OBJECT,
-            properties: {
-                title: { type: Type.STRING },
-                methods: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            },
-            required: ["title", "methods"]
-        },
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    principle: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    strategies: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                guideline: { type: Type.STRING },
+                                strategy: { type: Type.STRING },
+                                example: { type: Type.STRING },
+                            },
+                            required: ["guideline", "strategy", "example"]
+                        }
+                    }
+                },
+                required: ["principle", "description", "strategies"]
+            }
+        },
+        assessment: {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                methods: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                }
+            },
+            required: ["title", "methods"]
+        },
         multimedia_resources: {
             type: "ARRAY",
             description: "수업과 관련된 추천 멀티미디어 자료 목록",
@@ -89,8 +89,8 @@ const responseSchema = {
                 required: ["title", "platform", "search_query"]
             }
         }
-    },
-    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
+    },
+    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
 };
 
 // ✅ [새로 추가] 1, 2단계 내용만 생성하기 위한 간단한 설계도
@@ -105,9 +105,9 @@ const analysisOnlySchema = {
 
 
 export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<GeneratedLessonPlan> => {
-    const { gradeLevel, semester, subject, topic, duration, objectives, unitName, achievementStandards, specialNeeds, studentCharacteristics } = inputs;
+    const { gradeLevel, semester, subject, topic, duration, objectives, unitName, achievementStandards, specialNeeds, studentCharacteristics } = inputs;
 
-    const prompt = `
+    const prompt = `
       당신은 2022 개정 교육과정과 보편적 학습 설계(UDL)를 전문으로 하는 수업 설계 전문가입니다.
       당신의 임무는 사용자의 입력을 바탕으로, '보편적 학습 설계 한국 틀' 형식에 맞는 포괄적인 지도안을 만드는 것입니다.
 
@@ -137,20 +137,20 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
       7.  **출력 형식:** 제공된 스키마를 준수하는 JSON 객체 형식으로, 모든 내용을 한국어로 작성해주세요. (중요!) multimedia_resources를 포함한 모든 필수 항목을 절대로 빠뜨리지 마세요.
     `;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: responseSchema,
-                temperature: 0.8,
-            },
-        });
-        
-        const jsonText = response.text.trim();
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+                temperature: 0.8,
+            },
+        });
+
+        const jsonText = response.text.trim();
         // ✅ AI가 반환한 결과를 임시로 저장합니다.
-        let parsedPlan = JSON.parse(jsonText) as Partial<GeneratedLessonPlan>;
+        let parsedPlan = JSON.parse(jsonText) as Partial<GeneratedLessonPlan>;
 
         // ✅ [새로 추가] AI가 1, 2단계 내용을 빠뜨렸는지 확인하고, 그렇다면 다시 요청하는 '보험용' 코드
         if (!parsedPlan.contextAnalysis || !parsedPlan.learnerAnalysis) {
@@ -187,17 +187,17 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             // 다시 요청해서 받은 1, 2단계 내용을 기존 결과에 합칩니다.
             parsedPlan = { ...parsedPlan, ...analysisContent };
         }
-        
+
         // 사용자 입력을 최종 결과에 포함시킵니다.
         parsedPlan.achievementStandard = inputs.achievementStandards;
 
         // 최종적으로 완전한 형태의 지도안으로 변환하여 반환합니다.
         return parsedPlan as GeneratedLessonPlan;
 
-    } catch (error) {
-        console.error("Error generating lesson plan:", error);
-        throw new Error("AI로부터 지도안을 생성하는 데 실패했습니다. 응답이 유효한 JSON이 아닐 수 있습니다.");
-    }
+    } catch (error) {
+        console.error("Error generating lesson plan:", error);
+        throw new Error("AI로부터 지도안을 생성하는 데 실패했습니다. 응답이 유효한 JSON이 아닐 수 있습니다.");
+    }
 };
 
 const tablePlanSchema = {
@@ -217,7 +217,7 @@ const tablePlanSchema = {
                     items: { type: Type.STRING }
                 },
             },
-             required: ["lessonTitle", "subject", "gradeLevel", "topic", "objectives", "duration", "materials"]
+            required: ["lessonTitle", "subject", "gradeLevel", "topic", "objectives", "duration", "materials"]
         },
         steps: {
             type: Type.ARRAY,
@@ -227,7 +227,7 @@ const tablePlanSchema = {
                     phase: { type: Type.STRING },
                     duration: { type: Type.STRING },
                     process: { type: Type.STRING },
-                    teacherActivities: { 
+                    teacherActivities: {
                         type: Type.ARRAY,
                         items: { type: Type.STRING }
                     },
@@ -319,7 +319,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
                 temperature: 0.8,
             },
         });
-        
+
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as TableLessonPlan;
 
@@ -365,7 +365,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
                 temperature: 0.8,
             },
         });
-        
+
         const jsonText = response.text.trim();
         const parsedResponse = JSON.parse(jsonText) as { topics: string[] };
 
@@ -382,28 +382,39 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
 };
 
 const achievementStandardsResponseSchema = {
-    type: Type.OBJECT,
-    properties: {
-        standards: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "가장 관련성이 높은 성취기준 2~4개를 담은 배열"
-        }
-    },
-    required: ["standards"]
+    type: Type.OBJECT,
+    properties: {
+        standards: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "가장 관련성이 높은 성취기준 2~4개를 담은 배열"
+        }
+    },
+    required: ["standards"]
 };
 
 export const generateAchievementStandards = async (gradeLevel: string, semester: string, subject: string, unitName: string): Promise<string[]> => {
-    
+
     // ✅ 1. 데이터베이스에서 해당 과목, 학년의 성취기준 목록을 찾습니다.
-    const relevantStandardsList = achievementStandardsDB[subject]?.[gradeLevel] || [];
+    let relevantStandardsList: string[] = [];
+
+    if (subject === '통합교과') {
+        // 통합교과인 경우 바른 생활, 슬기로운 생활, 즐거운 생활의 성취기준을 모두 가져옵니다.
+        const subjectsToCombine = ['바른 생활', '슬기로운 생활', '즐거운 생활'];
+        subjectsToCombine.forEach(sub => {
+            const standards = achievementStandardsDB[sub]?.[gradeLevel] || [];
+            relevantStandardsList = [...relevantStandardsList, ...standards];
+        });
+    } else {
+        relevantStandardsList = achievementStandardsDB[subject]?.[gradeLevel] || [];
+    }
 
     // ✅ 2. 만약 데이터베이스에 해당 정보가 없으면, 빈 목록을 반환하고 함수를 종료합니다.
     if (relevantStandardsList.length === 0) {
         console.warn(`성취기준 데이터베이스에서 '${gradeLevel}' '${subject}'에 대한 정보를 찾을 수 없습니다.`);
         return [`'${subject}' 과목의 성취기준 데이터가 없습니다. data/achievementStandards.ts 파일을 확인해주세요.`];
     }
-    
+
     // ✅ 3. AI에게 "기억하지 말고, 내가 주는 이 목록 안에서 골라줘" 라고 명확하게 지시합니다.
     const prompt = `
         당신은 2022 개정 교육과정 전문가입니다.
@@ -432,7 +443,7 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
                 temperature: 0.3, // 더 정확한 선택을 위해 온도를 낮춤
             },
         });
-        
+
         const jsonText = response.text.trim();
         const parsedResponse = JSON.parse(jsonText) as { standards: string[] };
 
@@ -464,16 +475,16 @@ const objectiveOptionsSchema = { // 이름 변경
 // generateLearningObjective -> generateLearningObjectiveOptions
 // Promise<string> -> Promise<string[]>
 export const generateLearningObjectiveOptions = async (
-    gradeLevel: string, 
-    semester: string, 
-    subject: string, 
+    gradeLevel: string,
+    semester: string,
+    subject: string,
     topic: string,
     // [개선] 성취기준도 함께 보내면 더 정확한 목표가 생성됩니다.
-    achievementStandards: string 
+    achievementStandards: string
 ): Promise<string[]> => {
-    
+
     // [개선] 프롬프트에 성취기준 문맥 추가
-    const standardsContext = achievementStandards 
+    const standardsContext = achievementStandards
         ? `\n- 관련 성취기준: ${achievementStandards}`
         : '';
 
@@ -502,9 +513,9 @@ export const generateLearningObjectiveOptions = async (
                 temperature: 0.8,
             },
         });
-        
+
         const jsonText = response.text.trim();
-        
+
         // [수정] 파싱 로직 변경 (객체에서 'objectives' 배열을 추출)
         const parsedResponse = JSON.parse(jsonText) as { objectives: string[] };
 
@@ -521,40 +532,40 @@ export const generateLearningObjectiveOptions = async (
 };
 
 const worksheetSchema = {
-  type: Type.OBJECT,
-  properties: {
-    title: { type: Type.STRING },
-    description: { type: Type.STRING },
-    levels: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          levelName: { type: Type.STRING, description: "'기본', '보충', 또는 '심화'" },
-          title: { type: Type.STRING, description: "해당 수준의 활동 제목" },
-          activities: {
+    type: Type.OBJECT,
+    properties: {
+        title: { type: Type.STRING },
+        description: { type: Type.STRING },
+        levels: {
             type: Type.ARRAY,
             items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
-                description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
-                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" },
-                imagePrompt: { // ✅ 이 부분이 올바른지 다시 확인
-                  type: Type.STRING,
-                  description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)",
-                  nullable: true
-                }
-              },
-              required: ["title", "description", "content"]
+                type: Type.OBJECT,
+                properties: {
+                    levelName: { type: Type.STRING, description: "'기본', '보충', 또는 '심화'" },
+                    title: { type: Type.STRING, description: "해당 수준의 활동 제목" },
+                    activities: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
+                                description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
+                                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" },
+                                imagePrompt: { // ✅ 이 부분이 올바른지 다시 확인
+                                    type: Type.STRING,
+                                    description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)",
+                                    nullable: true
+                                }
+                            },
+                            required: ["title", "description", "content"]
+                        }
+                    }
+                },
+                required: ["levelName", "title", "activities"]
             }
-          }
-        },
-        required: ["levelName", "title", "activities"]
-      }
-    }
-  },
-  required: ["title", "description", "levels"]
+        }
+    },
+    required: ["title", "description", "levels"]
 };
 
 export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Worksheet> => {
@@ -583,7 +594,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
         6.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
         7.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
     `;
-    
+
     try {
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",
@@ -594,7 +605,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
                 temperature: 0.5,
             },
         });
-        
+
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as Worksheet;
 
@@ -760,7 +771,7 @@ const processEvaluationWorksheetSchema = {
 export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInputs, udlEvaluationPlan?: UdlEvaluationPlan): Promise<ProcessEvaluationWorksheet> => {
     const { gradeLevel, semester, subject, topic, objectives } = inputs;
 
-    const evaluationContext = udlEvaluationPlan 
+    const evaluationContext = udlEvaluationPlan
         ? `
         **참고할 UDL 평가 계획:**
         - 평가 계획 제목: ${udlEvaluationPlan.title}
@@ -801,11 +812,11 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
                 temperature: 0.7,
             },
         });
-        
+
         const jsonText = response.text.trim();
         return JSON.parse(jsonText) as ProcessEvaluationWorksheet;
 
-        
+
 
     } catch (error) {
         console.error("Error generating process evaluation worksheet:", error);
@@ -814,8 +825,8 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 };
 
 export const reviseUDLLessonPlan = async (
-  originalPlan: GeneratedLessonPlan,
-  userFeedback: string
+    originalPlan: GeneratedLessonPlan,
+    userFeedback: string
 ): Promise<GeneratedLessonPlan> => {
     // 재시도 설정 (재시도 로봇 없이 직접 구현)
     const maxRetries = 2;
@@ -824,7 +835,7 @@ export const reviseUDLLessonPlan = async (
     for (let i = 0; i <= maxRetries; i++) {
         try {
             const planToSend = { ...originalPlan };
-            delete planToSend.id; 
+            delete planToSend.id;
             const prompt = `
               당신은 UDL 수업 설계 전문가이자, 기존 지도안을 사용자의 피드백에 따라 수정하는 뛰어난 편집자입니다.
 
@@ -858,28 +869,28 @@ export const reviseUDLLessonPlan = async (
             // @ts-ignore - response.text 타입 추론을 위해 무시
             let jsonText = response.text?.trim(); // 최신 라이브러리의 .text() 대신 기존 방식 유지
             if (!jsonText) throw new Error("AI로부터 빈 응답을 받았습니다.");
-        
+
             if (jsonText.startsWith("```json")) {
-              jsonText = jsonText.substring(7, jsonText.length - 3);
+                jsonText = jsonText.substring(7, jsonText.length - 3);
             }
             const parsed = JSON.parse(jsonText) as Partial<GeneratedLessonPlan>;
-            
+
             // 필수 필드 검증 강화
-             const requiredKeys: (keyof GeneratedLessonPlan)[] = [
-               "lessonTitle", "subject", "gradeLevel", "learningObjectives", 
-               "detailedObjectives", "contextAnalysis", "learnerAnalysis", 
-               "udlPrinciples", "assessment", "multimedia_resources"
-             ];
-             const missingKeys = requiredKeys.filter(key => !(key in parsed));
-             if (missingKeys.length > 0) {
-                 console.error("AI revision response is missing required keys:", missingKeys, parsed);
-                 throw new Error(`AI가 수정한 지도안에 필수 항목이 누락되었습니다: ${missingKeys.join(', ')}`);
-             }
+            const requiredKeys: (keyof GeneratedLessonPlan)[] = [
+                "lessonTitle", "subject", "gradeLevel", "learningObjectives",
+                "detailedObjectives", "contextAnalysis", "learnerAnalysis",
+                "udlPrinciples", "assessment", "multimedia_resources"
+            ];
+            const missingKeys = requiredKeys.filter(key => !(key in parsed));
+            if (missingKeys.length > 0) {
+                console.error("AI revision response is missing required keys:", missingKeys, parsed);
+                throw new Error(`AI가 수정한 지도안에 필수 항목이 누락되었습니다: ${missingKeys.join(', ')}`);
+            }
 
             return parsed as GeneratedLessonPlan; // 성공 시 결과 반환
 
         } catch (error: any) {
-             if (i === maxRetries) {
+            if (i === maxRetries) {
                 console.error("지도안 수정 중 모든 재시도 실패:", error);
                 throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다. 잠시 후 다시 시도해주세요.");
             }
@@ -887,21 +898,21 @@ export const reviseUDLLessonPlan = async (
             await new Promise(resolve => setTimeout(resolve, delayMs));
         }
     }
-     throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
+    throw new Error("AI로부터 지도안을 수정하는 데 실패했습니다.");
 };
 
 export const generateImageForActivity = async (
-  activityTitle: string,
-  activityContent: string,
-  originalImagePrompt: string
+    activityTitle: string,
+    activityContent: string,
+    originalImagePrompt: string
 ): Promise<string> => {
-  const maxRetries = 1;
-  const delayMs = 2000;
+    const maxRetries = 1;
+    const delayMs = 2000;
 
-  // (API Key 방식)
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${process.env.API_KEY}`;
+    // (API Key 방식)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${process.env.API_KEY}`;
 
-  const detailedPrompt = `
+    const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
     
     [Context]
@@ -919,41 +930,41 @@ export const generateImageForActivity = async (
     - Focus ONLY on visual elements.
   `.trim();
 
-  const payload = {
-    instances: [{ prompt: detailedPrompt }],
-    parameters: {
-        sampleCount: 1,
-        negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
+    const payload = {
+        instances: [{ prompt: detailedPrompt }],
+        parameters: {
+            sampleCount: 1,
+            negativePrompt: "text, writing, letters, numbers, symbols, watermark, blurry, distorted"
+        }
+    };
+
+    for (let i = 0; i <= maxRetries; i++) {
+        try {
+            console.log(`🖼️ Image Gen Attempt ${i + 1}`);
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
+                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+            } else {
+                throw new Error("No image data in response");
+            }
+
+        } catch (error: any) {
+            console.error(`Image Gen Error (${i + 1}):`, error);
+            if (i === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
     }
-  };
-
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      console.log(`🖼️ Image Gen Attempt ${i + 1}`);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Imagen API Error: ${errorData.error?.message || response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
-        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-      } else {
-        throw new Error("No image data in response");
-      }
-
-    } catch (error: any) {
-      console.error(`Image Gen Error (${i + 1}):`, error);
-      if (i === maxRetries) throw error;
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-  throw new Error("Image generation failed");
+    throw new Error("Image generation failed");
 };

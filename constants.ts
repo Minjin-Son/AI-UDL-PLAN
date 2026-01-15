@@ -26,6 +26,7 @@ export const SUBJECTS: string[] = [
   '바른 생활',
   '슬기로운 생활',
   '즐거운 생활',
+  '통합교과',
 ];
 
 export const SPECIAL_NEEDS_SUGGESTIONS: string[] = [
