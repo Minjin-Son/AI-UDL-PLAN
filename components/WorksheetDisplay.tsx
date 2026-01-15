@@ -17,16 +17,24 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
   const headerBgColor = "bg-orange-100";
   const headerTextColor = "text-slate-800";
 
-  // Helper for generated images
+  // ✅ [핵심 기능] AI 이미지 생성 요청 핸들러
   const handleGenerateImage = async (levelIndex: number, activityIndex: number, title: string, content: string, prompt?: string) => {
     const key = `${levelIndex}-${activityIndex}`;
     setLoadingImages(prev => ({ ...prev, [key]: true }));
+
+    // ✅ 첫 번째 활동(index 0)인 경우 '활동지 자체' 생성 모드로 요청
+    const isWorksheetMode = (activityIndex === 0);
 
     try {
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content, imagePrompt: prompt || title }),
+        body: JSON.stringify({
+          title,
+          content,
+          imagePrompt: prompt || title,
+          isWorksheet: isWorksheetMode // API에 플래그 전달
+        }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || '이미지 생성 실패');
@@ -43,6 +51,9 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
     const imageKey = `${levelIndex}-${activityIndex}`;
     const hasImage = generatedImages[imageKey];
     const isLoading = loadingImages[imageKey];
+
+    // 첫 번째 활동 여부 확인
+    const isFirstActivity = (activityIndex === 0);
 
     switch (activity.type) {
       case 'table':
@@ -68,6 +79,27 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
             </table>
             {/* Fallback description if content exists */}
             {activity.content && <p className="text-xs text-slate-500 mt-2">※ {activity.content}</p>}
+
+            {/* ✅ 첫 번째 활동이 Table 유형일 때도 활동지 이미지 생성 버튼 노출 */}
+            {isFirstActivity && (
+              <div className="mt-4 flex justify-center">
+                {hasImage ? (
+                  <div className="relative group">
+                    <img src={hasImage} alt="AI Worksheet" className="max-w-md w-full rounded shadow-md border-2 border-orange-200" />
+                    <button onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                      className="absolute bottom-2 right-2 bg-white/90 p-1.5 rounded-full text-xs hover:bg-white text-orange-600 shadow font-bold">↻ 다시 생성</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm shadow-md flex items-center gap-2 font-bold transition-transform transform hover:scale-105"
+                  >
+                    {isLoading ? <span className="animate-spin">⌛</span> : <span>📄 이 문제의 활동지(이미지) 생성하기</span>}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       case 'drawing':
@@ -80,6 +112,27 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
             >
               (이곳에 그림을 그리거나 내용을 작성하세요)
             </div>
+
+            {/* ✅ 첫 번째 활동이 Drawing 유형일 때도 활동지 이미지 생성 버튼 노출 */}
+            {isFirstActivity && (
+              <div className="mt-4 flex justify-center">
+                {hasImage ? (
+                  <div className="relative group">
+                    <img src={hasImage} alt="AI Worksheet" className="max-w-md w-full rounded shadow-md border-2 border-orange-200" />
+                    <button onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                      className="absolute bottom-2 right-2 bg-white/90 p-1.5 rounded-full text-xs hover:bg-white text-orange-600 shadow font-bold">↻ 다시 생성</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm shadow-md flex items-center gap-2 font-bold transition-transform transform hover:scale-105"
+                  >
+                    {isLoading ? <span className="animate-spin">⌛</span> : <span>📄 이 문제의 활동지(이미지) 생성하기</span>}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       case 'image_select':
@@ -88,23 +141,23 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-slate-700" style={{ whiteSpace: 'pre-wrap' }}>
               {activity.content}
             </div>
-            {/* Image Gen UI */}
-            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-blue-200 rounded-lg bg-blue-50/30">
+            {/* Image Gen UI: First Activity -> Worksheet Mode, Others -> Illustration Mode */}
+            <div className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg ${isFirstActivity ? 'border-orange-200 bg-orange-50/30' : 'border-blue-200 bg-blue-50/30'}`}>
               {hasImage ? (
                 <div className="relative group">
-                  <img src={hasImage} alt="AI Generated" className="max-w-full h-auto max-h-64 rounded shadow-md" />
+                  <img src={hasImage} alt={isFirstActivity ? "AI Worksheet" : "AI Generated"} className="max-w-full h-auto max-h-96 rounded shadow-md" />
                   <button onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
                     className="absolute bottom-2 right-2 bg-white/80 p-1 rounded-full text-xs hover:bg-white text-blue-600 shadow-sm">↺</button>
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-xs text-slate-500 mb-2">{activity.imagePrompt || "삽화 생성 가능"}</p>
+                  <p className="text-xs text-slate-500 mb-2">{activity.imagePrompt || (isFirstActivity ? "이 내용을 바탕으로 활동지 이미지 생성" : "삽화 생성 가능")}</p>
                   <button
                     onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
                     disabled={isLoading}
-                    className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm shadow-sm flex items-center gap-1 mx-auto"
+                    className={`px-3 py-1.5 text-white rounded text-sm shadow-sm flex items-center gap-1 mx-auto ${isFirstActivity ? 'bg-orange-500 hover:bg-orange-600 font-bold' : 'bg-blue-500 hover:bg-blue-600'}`}
                   >
-                    {isLoading ? <span className="animate-spin">⌛</span> : <span>🎨 AI 삽화 생성</span>}
+                    {isLoading ? <span className="animate-spin">⌛</span> : <span>{isFirstActivity ? "📄 활동지(이미지) 생성" : "🎨 AI 삽화 생성"}</span>}
                   </button>
                 </div>
               )}
@@ -116,6 +169,26 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, fo
         return (
           <div className={`mt-2 p-4 bg-slate-50 rounded-lg border border-slate-200 leading-relaxed text-slate-700 whitespace-pre-wrap ${contentTextSize}`}>
             {activity.content}
+            {/* ✅ 첫 번째 활동이 Text 유형일 때도 활동지 이미지 생성 버튼 노출 */}
+            {isFirstActivity && (
+              <div className="mt-4 flex justify-center border-t border-slate-100 pt-3">
+                {hasImage ? (
+                  <div className="relative group">
+                    <img src={hasImage} alt="AI Worksheet" className="max-w-md w-full rounded shadow-md border-2 border-orange-200" />
+                    <button onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                      className="absolute bottom-2 right-2 bg-white/90 p-1.5 rounded-full text-xs hover:bg-white text-orange-600 shadow font-bold">↻ 다시 생성</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleGenerateImage(levelIndex, activityIndex, activity.title, activity.content, activity.imagePrompt)}
+                    disabled={isLoading}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm shadow-md flex items-center gap-2 font-bold transition-transform transform hover:scale-105"
+                  >
+                    {isLoading ? <span className="animate-spin">⌛</span> : <span>📄 이 문제의 활동지(이미지) 생성하기</span>}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
     }
