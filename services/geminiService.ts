@@ -536,6 +536,18 @@ const worksheetSchema = {
     properties: {
         title: { type: Type.STRING },
         description: { type: Type.STRING },
+        metadata: {
+            type: Type.OBJECT,
+            properties: {
+                grade: { type: Type.STRING },
+                semester: { type: Type.STRING },
+                subject: { type: Type.STRING },
+                unit: { type: Type.STRING },
+                topic: { type: Type.STRING },
+                objectives: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["grade", "semester", "subject", "unit", "topic", "objectives"]
+        },
         levels: {
             type: Type.ARRAY,
             items: {
@@ -548,16 +560,30 @@ const worksheetSchema = {
                         items: {
                             type: Type.OBJECT,
                             properties: {
+                                type: { type: Type.STRING, enum: ['text', 'table', 'drawing', 'image_select'], description: "활동의 유형 (text: 일반 질문, table: 표 작성/비교, drawing: 그림 그리기/상자, image_select: 이미지 선택/생성)" },
                                 title: { type: Type.STRING, description: "개별 활동의 소제목 또는 질문" },
                                 description: { type: Type.STRING, description: "활동에 대한 간단한 설명이나 지시문" },
-                                content: { type: Type.STRING, description: "활동의 구체적인 내용 (예: 문제, 지문, 과제)" },
-                                imagePrompt: { // ✅ 이 부분이 올바른지 다시 확인
+                                content: { type: Type.STRING, description: "활동의 구체적인 내용 (텍스트 질문 등). 표나 그림 유형일 경우 빈 문자열일 수 있음" },
+                                tableData: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        headers: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                        rows: {
+                                            type: Type.ARRAY,
+                                            items: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                            description: "빈 칸은 빈 문자열로 두어 학생이 채우도록 함"
+                                        }
+                                    },
+                                    nullable: true
+                                },
+                                boxHeight: { type: Type.NUMBER, description: "drawing 유형일 경우 상자의 높이 (px 단위, 예: 200)", nullable: true },
+                                imagePrompt: {
                                     type: Type.STRING,
                                     description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)",
                                     nullable: true
                                 }
                             },
-                            required: ["title", "description", "content"]
+                            required: ["type", "title", "description", "content"]
                         }
                     }
                 },
@@ -565,34 +591,48 @@ const worksheetSchema = {
             }
         }
     },
-    required: ["title", "description", "levels"]
+    required: ["title", "description", "metadata", "levels"]
 };
 
 export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Worksheet> => {
-    const { gradeLevel, semester, subject, topic, objectives, studentCharacteristics } = inputs;
+    const { gradeLevel, semester, subject, topic, objectives, studentCharacteristics, unitName } = inputs;
 
     const prompt = `
         당신은 UDL(보편적 학습 설계)과 수준별 수업에 전문성을 가진 교육 자료 개발 전문가입니다.
-        제공된 수업 정보를 바탕으로, 모든 학생이 참여할 수 있는 '수준별 활동지'를 생성해 주세요.
+        제공된 수업 정보를 바탕으로, 실제 학교 현장에서 바로 사용할 수 있는 형태의 수준 높은 '수준별 활동지'를 생성해 주세요.
+        단순한 텍스트 나열이 아닌, **표(Table), 그림 그리기 상자(Context Box), 이미지 등 다양한 형식을 활용하여** 시각적으로 구조화된 활동지를 만들어야 합니다.
 
         **수업 정보:**
         - **학년:** ${gradeLevel} (${semester})
         - **과목:** ${subject}
+        - **단원:** ${unitName}
         - **수업 주제:** ${topic}
         - **학습 목표:** ${objectives}
         - **고려할 학생 특성:** ${studentCharacteristics || '일반적인 학생 집단을 가정합니다.'}
 
         **활동지 생성 지침:**
-        1.  **전체 구조:** 활동지는 '제목(title)', '설명(description)', 그리고 3개의 '수준(levels)' 배열로 구성됩니다.
-        2.  **수준별 구성:**
-            -   **'기본' 수준:** 학습에 어려움을 겪는 학생들을 위한 활동입니다. 핵심 개념을 확인하는 직접적인 질문, 용어 연결하기, 그림 보고 답하기 등 구조화되고 명확한 과제를 1~2개 제시해 주세요. **만약 학생 특성이 제공되었다면, 그 특성에 맞춰 활동을 조정해주세요. (예: 긴 글 읽기 어려움 -> 그림이나 도표 활용)**
-            -   **'보충' 수준:** 대부분의 학생들이 성취할 수 있는 활동입니다. 학습한 내용을 적용하고 분석하는 문제, 간단한 자료를 해석하고 자신의 생각을 쓰는 활동 등을 1~2개 제시해 주세요.
-            -   **'심화' 수준:** 도전적인 과제가 필요한 학생들을 위한 활동입니다. 비판적 사고, 창의적 문제 해결, 새로운 상황에 개념을 확장 적용하는 개방형 질문이나 프로젝트형 과제를 1~2개 제시해 주세요.
-        3.  **활동 내용:** 각 수준(level)에는 '활동 제목(title)'과 '활동 내용(activities)' 배열이 포함되어야 합니다. 각 'activity' 객체에는 소제목(title), 지시문(description), 그리고 구체적인 내용(content)이 있어야 합니다.
-        4.  **🎨 이미지 프롬프트 생성 (imagePrompt): 각 활동(activity) 내용에 시각적으로 도움이 될 만한 간단한 삽화 이미지를 상상하여, 그 이미지를 생성할 수 있는 **짧고 명확한 프롬프트 아이디어**를 'imagePrompt' 필드에 한국어로 작성해주세요. (예: "물의 순환 과정을 보여주는 간단한 그림", "웃는 얼굴의 태양 아이콘"). 만약 적절한 이미지 아이디어가 없으면 이 필드는 생략해도 됩니다.**
-        5.  **창의성:** 활동지 전체 제목(title)은 수업 주제와 관련하여 학생들이 흥미를 느낄 만하게 만들어 주세요.
-        6.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
-        7.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
+        1.  **메타데이터(metadata):** 상단에 들어갈 학년, 학기, 과목, 단원, 주제, 학습목표를 정확히 기입해주세요.
+        2.  **수준별 구성 및 활동 유형 다양화 (중요):**
+            -   **'기본' 수준:** 
+                - 용어 연결하기나 빈칸 채우기 같은 활동은 **'table'** 유형을 활용하여 정리된 표 형식으로 제시하세요. 
+                - 그림을 보고 답하거나 그림을 그려야 하는 경우 **'drawing'** 유형을 사용하세요 (boxHeight 조절).
+                - 핵심 개념 확인 질문은 'text' 유형을 사용하세요.
+            -   **'보충' 수준:** 
+                - 개념 비교나 분류 활동은 **'table'** 유형을 적극 활용하세요 (헤더만 주고 내용은 비워두어 학생이 채우게 함).
+                - 상황을 묘사하거나 자신의 생각을 그림으로 표현하는 활동은 **'drawing'** 유형을 사용하세요.
+            -   **'심화' 수준:** 
+                - 프로젝트 계획 수립이나 복잡한 분류는 **'table'** 유형을 사용하세요.
+                - 마인드맵 그리기나 포스터 디자인 같은 활동은 **'drawing'** 유형을 사용하세요.
+                
+        3.  **활동 내용(content) 작성 팁:** 
+            - 'table' 유형일 경우 tableData에 헤더와 행(rows) 데이터를 넣어주세요. 학생이 채워야 할 부분은 빈 문자열("")로 남겨두세요.
+            - 'drawing' 유형일 경우 content에 "다음 공간에 ~을 그려보세요" 같은 지시문을 적고 boxHeight를 설정하세요.
+            - 'image_select' 유형은 AI 삽화 생성이 필요한 경우에만 사용하며, imagePrompt를 반드시 포함하세요.
+
+        4.  **🎨 이미지 프롬프트 (imagePrompt):** 활동지의 시각적 흥미를 높이기 위해, 각 활동 옆에 배치할 수 있는 **작고 귀여운 아이콘이나 삽화**에 대한 프롬프트를 적극적으로 제안해주세요.
+
+        5.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
+        6.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
     `;
 
     try {
@@ -602,7 +642,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
             config: {
                 responseMimeType: "application/json",
                 responseSchema: worksheetSchema,
-                temperature: 0.5,
+                temperature: 0.7, // 창의적인 형식 사용을 위해 약간 높임
             },
         });
 

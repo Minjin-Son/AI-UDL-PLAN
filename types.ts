@@ -1,26 +1,26 @@
 export interface LessonPlanInputs {
-  gradeLevel: string;
-  semester: string;
-  subject: string;
-  topic: string;
-  duration: string;
-  objectives: string;
-  unitName: string;
-  achievementStandards: string;
-  specialNeeds?: string;
-  studentCharacteristics?: string;
+  gradeLevel: string;
+  semester: string;
+  subject: string;
+  topic: string;
+  duration: string;
+  objectives: string;
+  unitName: string;
+  achievementStandards: string;
+  specialNeeds?: string;
+  studentCharacteristics?: string;
 }
 
 export interface UDLStrategy {
-    guideline: string;
-    strategy: string;
-    example: string;
+  guideline: string;
+  strategy: string;
+  example: string;
 }
 
 export interface UDLPrincipleSection {
-    principle: string;
-    description: string;
-    strategies: UDLStrategy[];
+  principle: string;
+  description: string;
+  strategies: UDLStrategy[];
 }
 
 export interface AssessmentSection {
@@ -29,103 +29,125 @@ export interface AssessmentSection {
 }
 
 export interface LessonPlanTableRow {
-    phase: string;
-    duration: string;
-    process: string;
-    teacherActivities: string[];
-    studentActivities: string[];
-    materialsAndNotes: string[];
+  phase: string;
+  duration: string;
+  process: string;
+  teacherActivities: string[];
+  studentActivities: string[];
+  materialsAndNotes: string[];
 }
 
 export interface EvaluationCriterion {
-    content: string;
-    method: string;
-    excellent: string;
-    good: string;
-    needsImprovement: string;
+  content: string;
+  method: string;
+  excellent: string;
+  good: string;
+  needsImprovement: string;
 }
 
 export interface TableLessonPlan {
-    metadata: {
-        lessonTitle: string;
-        subject: string;
-        gradeLevel: string;
-        topic: string;
-        objectives: string;
-        duration: string;
-        materials: string[];
-    };
-    steps: LessonPlanTableRow[];
-    evaluationPlan: {
-        title: string;
-        criteria: EvaluationCriterion[];
-    };
+  metadata: {
+    lessonTitle: string;
+    subject: string;
+    gradeLevel: string;
+    topic: string;
+    objectives: string;
+    duration: string;
+    materials: string[];
+  };
+  steps: LessonPlanTableRow[];
+  evaluationPlan: {
+    title: string;
+    criteria: EvaluationCriterion[];
+  };
 }
 
+export type ActivityType = 'text' | 'table' | 'drawing' | 'image_select';
+
 export interface WorksheetActivity {
-    title: string;
-    description: string;
-    content: string;
-    imagePrompt?: string;
+  type: ActivityType;
+  title: string;
+  description: string;
+  content: string; // for 'text' or fallback
+
+  // For 'table' type
+  tableData?: {
+    headers: string[];
+    rows: string[][];
+  };
+
+  // For 'drawing' type
+  boxHeight?: number; // e.g., 200 for 200px
+
+  // For 'image_select' or illustration
+  imagePrompt?: string;
 }
 
 export interface WorksheetLevel {
-    levelName: string;
-    title: string;
-    activities: WorksheetActivity[];
+  levelName: string;
+  title: string;
+  activities: WorksheetActivity[];
 }
 
 export interface Worksheet {
-    title: string;
-    description: string;
-    levels: WorksheetLevel[];
+  title: string;
+  description: string;
+  metadata: {
+    grade: string;
+    semester: string;
+    subject: string;
+    unit: string;
+    topic: string;
+    objectives: string[];
+  };
+  levels: WorksheetLevel[];
 }
 
 export interface EvaluationTaskLevel {
-    description: string;
-    criteria: string;
+  description: string;
+  criteria: string;
 }
 
 export interface EvaluationTask {
-    taskTitle: string;
-    taskDescription: string;
-    udlConnections: string[];
-    levels: {
-        advanced: EvaluationTaskLevel;
-        proficient: EvaluationTaskLevel;
-        basic: EvaluationTaskLevel;
-    };
+  taskTitle: string;
+  taskDescription: string;
+  udlConnections: string[];
+  levels: {
+    advanced: EvaluationTaskLevel;
+    proficient: EvaluationTaskLevel;
+    basic: EvaluationTaskLevel;
+  };
 }
 
 export interface UdlEvaluationPlan {
-    title: string;
-    description: string;
-    tasks: EvaluationTask[];
+  title: string;
+  description: string;
+  tasks: EvaluationTask[];
 }
 
 export interface EvaluationItem {
-    criterion: string;
-    levels: {
-        excellent: string;
-        good: string;
-        needsImprovement: string;
-    };
+  criterion: string;
+  levels: {
+    excellent: string;
+    good: string;
+    needsImprovement: string;
+  };
 }
 
 export interface ProcessEvaluationWorksheet {
-    title: string;
-    studentInfo: {
-        grade: string;
-        class: string;
-        number: string;
-        name: string;
-    };
-    overallDescription: string;
-    evaluationItems: EvaluationItem[];
-    overallFeedback: {
-        teacherComment: string;
-        studentReflection: string;
-    };
+  title: string;
+  studentInfo: {
+    grade: string;
+    class: string;
+    number: string;
+    name: string;
+  };
+  overallDescription: string;
+  evaluationItems: EvaluationItem[];
+  overallFeedback: {
+    teacherComment: string;
+    studentReflection: string;
+  };
 }
 
 // '전체', '일부', '소수' 목표를 위한 새로운 타입
@@ -149,9 +171,9 @@ export interface GeneratedLessonPlan {
   achievementStandard: string;
   contextAnalysis: string;
   learnerAnalysis: string;
-  
+
   // 기존 learningObjectives를 대체하는 세분화된 목표 객체
-  detailedObjectives: DetailedObjectives; 
+  detailedObjectives: DetailedObjectives;
 
   udlPrinciples: UDLPrincipleSection[];
   assessment: AssessmentSection;
