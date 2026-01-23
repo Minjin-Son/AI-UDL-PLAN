@@ -94,8 +94,120 @@ const UdlEvaluationDisplay: React.FC<UdlEvaluationDisplayProps> = ({ plan, isEdi
                     isEditing={isEditing}
                     value={plan.description}
                     onChange={(e) => handleFieldChange('description', e.target.value)}
-                    textClassName="text-slate-600"
+                    textClassName="text-slate-600 mb-6"
                 />
+
+                {/* ✅ 평가 개요 테이블 */}
+                <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-8">
+                    <table className="w-full text-sm text-left">
+                        <tbody>
+                            <tr className="border-b border-slate-100">
+                                <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700 w-1/4">단원(차시)</th>
+                                <td className="px-4 py-3">
+                                    <EditableField
+                                        isEditing={isEditing}
+                                        value={plan.unitLesson || ''}
+                                        onChange={(e) => handleFieldChange('unitLesson', e.target.value)}
+                                        textClassName="text-slate-800"
+                                        multiline={false}
+                                    />
+                                </td>
+                                <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700 w-1/4">평가 시기</th>
+                                <td className="px-4 py-3">
+                                    <EditableField
+                                        isEditing={isEditing}
+                                        value={plan.evaluationTiming || ''}
+                                        onChange={(e) => handleFieldChange('evaluationTiming', e.target.value)}
+                                        textClassName="text-slate-800"
+                                        multiline={false}
+                                    />
+                                </td>
+                            </tr>
+                            <tr className="border-b border-slate-100">
+                                <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700">평가 유형</th>
+                                <td colSpan={3} className="px-4 py-3">
+                                    <div className="flex gap-2 flex-wrap">
+                                        {Array.isArray(plan.evaluationTypes) ? plan.evaluationTypes.map((type, i) => (
+                                            <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                                                {type}
+                                            </span>
+                                        )) : <span className="text-slate-400 text-xs">평가 유형 정보 없음</span>}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr className="border-b border-slate-100">
+                                <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700 align-top">평가 의도 및 유의점</th>
+                                <td colSpan={3} className="px-4 py-3">
+                                    <EditableField
+                                        isEditing={isEditing}
+                                        value={plan.evaluationIntentAndNotices || ''}
+                                        onChange={(e) => handleFieldChange('evaluationIntentAndNotices', e.target.value)}
+                                        textClassName="text-slate-700 whitespace-pre-wrap"
+                                    />
+                                </td>
+                            </tr>
+                            {plan.achievementStandardLevels && (
+                                <tr className="border-b border-slate-100">
+                                    <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700 align-top">성취 수준</th>
+                                    <td colSpan={3} className="px-4 py-3">
+                                        <div className="space-y-2">
+                                            <div className="flex gap-2">
+                                                <span className="font-bold text-slate-700 min-w-[20px]">A:</span>
+                                                <EditableField
+                                                    isEditing={isEditing}
+                                                    value={plan.achievementStandardLevels.A || ''}
+                                                    onChange={(e) => {
+                                                        const newLevels = { ...plan.achievementStandardLevels, A: e.target.value };
+                                                        // @ts-ignore
+                                                        onPlanChange({ ...plan, achievementStandardLevels: newLevels });
+                                                    }}
+                                                    textClassName="text-slate-700"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className="font-bold text-slate-700 min-w-[20px]">B:</span>
+                                                <EditableField
+                                                    isEditing={isEditing}
+                                                    value={plan.achievementStandardLevels.B || ''}
+                                                    onChange={(e) => {
+                                                        const newLevels = { ...plan.achievementStandardLevels, B: e.target.value };
+                                                        // @ts-ignore
+                                                        onPlanChange({ ...plan, achievementStandardLevels: newLevels });
+                                                    }}
+                                                    textClassName="text-slate-700"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className="font-bold text-slate-700 min-w-[20px]">C:</span>
+                                                <EditableField
+                                                    isEditing={isEditing}
+                                                    value={plan.achievementStandardLevels.C || ''}
+                                                    onChange={(e) => {
+                                                        const newLevels = { ...plan.achievementStandardLevels, C: e.target.value };
+                                                        // @ts-ignore
+                                                        onPlanChange({ ...plan, achievementStandardLevels: newLevels });
+                                                    }}
+                                                    textClassName="text-slate-700"
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                            <tr>
+                                <th className="bg-slate-50 px-4 py-3 font-semibold text-slate-700 align-top">예시 답안</th>
+                                <td colSpan={3} className="px-4 py-3">
+                                    <EditableField
+                                        isEditing={isEditing}
+                                        value={plan.exampleAnswers || ''}
+                                        onChange={(e) => handleFieldChange('exampleAnswers', e.target.value)}
+                                        textClassName="text-slate-700 whitespace-pre-wrap bg-yellow-50/50 p-3 rounded"
+                                    />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div className="space-y-6">

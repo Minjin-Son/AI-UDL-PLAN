@@ -660,6 +660,24 @@ const udlEvaluationPlanSchema = {
     properties: {
         title: { type: Type.STRING },
         description: { type: Type.STRING },
+        unitLesson: { type: Type.STRING, description: "단원(차시) 정보 (예: [과학] 4. 생물의 한살이(7,12/13))" },
+        evaluationTiming: { type: Type.STRING, description: "평가 시기 (예: 6월 3주~7월 2주)" },
+        evaluationTypes: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "평가 유형 (예: ['서술형', '실험', '관찰평가'])"
+        },
+        evaluationIntentAndNotices: { type: Type.STRING, description: "평가 의도 및 유의점. 평가가 어떤 점에 중점을 두고 있는지, 유의할 점은 무엇인지 서술" },
+        achievementStandardLevels: {
+            type: Type.OBJECT,
+            properties: {
+                A: { type: Type.STRING, description: "성취 수준 A (매우 잘함) 기준" },
+                B: { type: Type.STRING, description: "성취 수준 B (잘함) 기준" },
+                C: { type: Type.STRING, description: "성취 수준 C (보통/노력요함) 기준" }
+            },
+            required: ["A", "B", "C"]
+        },
+        exampleAnswers: { type: Type.STRING, description: "예시 답안. 평가 문항에 대한 학생들의 예상 답안 (마크다운 형식 권장)" },
         tasks: {
             type: Type.ARRAY,
             items: {
@@ -707,39 +725,48 @@ const udlEvaluationPlanSchema = {
             }
         }
     },
-    required: ["title", "description", "tasks"]
+    required: ["title", "description", "unitLesson", "evaluationTiming", "evaluationTypes", "evaluationIntentAndNotices", "achievementStandardLevels", "exampleAnswers", "tasks"]
 };
 
 export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promise<UdlEvaluationPlan> => {
-    const { gradeLevel, semester, subject, topic, objectives, studentCharacteristics } = inputs;
+    const { gradeLevel, semester, subject, topic, objectives, studentCharacteristics, unitName } = inputs;
 
     const prompt = `
         당신은 보편적 학습 설계(UDL) 원칙에 기반한 학생 평가 전문가입니다.
-        제공된 수업 정보를 바탕으로, 모든 학생의 학습을 평가할 수 있는 'UDL 수준별 평가 계획'을 생성해 주세요.
+        제공된 수업 정보를 바탕으로, 모든 학생의 학습을 평가할 수 있는 포괄적인 'UDL 평가 계획'을 생성해 주세요.
+        단순한 평가 계획이 아니라, **단원 정보, 평가 시기, 평가 유형, 평가 의도 및 유의점, 성취 수준(A/B/C), 예시 답안**까지 포함된 상세한 계획서여야 합니다.
 
         **수업 정보:**
         - **학년:** ${gradeLevel} (${semester})
         - **과목:** ${subject}
+        - **단원:** ${unitName}
         - **수업 주제:** ${topic}
         - **학습 목표:** ${objectives}
         - **고려할 학생 특성:** ${studentCharacteristics || '일반적인 학생 집단을 가정합니다.'}
 
         **평가 계획 생성 지침:**
-        1.  **전체 구조:** 평가 계획은 '제목(title)', '설명(description)', 그리고 1~2개의 '평가 과제(tasks)' 배열로 구성됩니다.
-        2.  **평가 과제(tasks):**
-            -   각 과제는 학습 목표와 직접적으로 연관되어야 합니다.
-            -   'taskTitle': 과제의 명확한 제목을 붙여주세요.
-            -   'taskDescription': 과제가 무엇인지 구체적으로 설명해주세요.
-            -   'udlConnections': 이 과제가 UDL의 어떤 원칙(참여, 표상, 실행)과 관련이 있는지 1~2개 연결하여 설명해주세요.
-        3.  **수준별 구성(levels):**
-            -   각 과제는 '상(advanced)', '중(proficient)', '하(basic)'의 세 가지 수준으로 나누어 제시해야 합니다.
-            -   각 수준별로 학생에게 제공될 '과제 설명(description)'과 교사가 학생을 평가할 '평가 기준(criteria)'을 구체적으로 작성해주세요.
-            -   **상(advanced):** 학습 내용을 심화, 확장, 적용하는 도전적인 과제.
-            -   **중(proficient):** 학습 목표를 충실히 달성했는지 확인할 수 있는 표준 과제.
-            -   **하(basic):** 핵심 개념의 이해를 돕고 성공 경험을 제공하는 지원이 포함된 과제. **만약 학생 특성이 제공되었다면, '하' 수준의 과제는 그 학생의 특성을 고려하여 맞춤형으로 설계해야 합니다.**
-        4.  **창의성:** 평가 계획의 전체 제목(title)은 수업 주제와 관련하여 흥미롭게 만들어 주세요.
-        5.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
-        6.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
+        1.  **기본 정보 (Metadata):**
+            -   **단원(차시):** 과목, 단원명, 차시 정보를 포함하여 작성해주세요. (예: [과학] 4. 생물의 한살이(7,12/13))
+            -   **평가 시기:** 수업 진행 시기를 고려하여 현실적인 날짜나 주차를 제안해주세요. (예: 6월 3주)
+            -   **평가 유형:** 서술형, 논술형, 구술, 발표, 토의, 토론, 프로젝트, 실험, 실습, 기타 중 적절한 유형을 모두 골라주세요.
+        2.  **평가 요소 및 의도:**
+            -   **평가 요소:** 학습 목표를 기반으로 무엇을 평가할지 핵심 요소를 명시합니다. (description 필드에 작성)
+            -   **평가 의도 및 유의점:** 이 평가가 어떤 교육적 의도를 가지는지, 그리고 교사가 평가 시 유의해야 할 점(특히 학생 다양성 관련)을 서술해주세요.
+        3.  **성취 수준 (Achievement Levels):**
+            -   **A (매우 잘함):** 성취기준을 완벽하게 달성하고, 심화된 이해나 적용 능력을 보이는 수준.
+            -   **B (잘함):** 성취기준의 주요 내용을 이해하고 수행할 수 있는 수준.
+            -   **C (보통/노력요함):** 성취기준의 일부만 알고 있거나 도움을 받아야 수행할 수 있는 수준.
+        4.  **예시 답안 (Example Answers):**
+            -   평가 문항(특히 서술형이나 실험 등)에 대해 학생들이 작성할 것으로 예상되는 모범 답안이나 예시 반응을 구체적으로 작성해주세요.
+        5.  **UDL 기반 수준별 평가 과제 (Tasks):**
+            -   **평가 과제:** 학습 목표와 연관된 구체적인 평가 과제를 1~2개 제시하세요.
+            -   **UDL 연결:** 과제가 UDL의 3가지 원칙(참여, 표상, 실행) 중 무엇을 반영하는지 설명하세요.
+            -   **수준별(상/중/하) 과제 및 기준:**
+                -   **상(Advanced):** 심화/확장 과제 및 높은 기준.
+                -   **중(Proficient):** 표준 과제 및 성취 기준.
+                -   **하(Basic):** 지원/비계가 포함된 과제 및 기본 기준. **특수교육대상자 등 학습에 어려움이 있는 학생을 위한 구체적인 배려 사항 포함.**
+        6.  **언어:** 모든 내용은 한국어로 작성해야 합니다.
+        7.  **출력 형식:** 반드시 제공된 JSON 스키마를 엄격히 준수하여 응답을 생성해 주세요.
     `;
 
     try {

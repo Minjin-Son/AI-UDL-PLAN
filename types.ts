@@ -122,6 +122,16 @@ export interface EvaluationTask {
 export interface UdlEvaluationPlan {
   title: string;
   description: string;
+  unitLesson?: string;
+  evaluationTiming?: string;
+  evaluationTypes?: string[];
+  evaluationIntentAndNotices?: string;
+  achievementStandardLevels?: {
+    A: string;
+    B: string;
+    C: string;
+  };
+  exampleAnswers?: string; // 예시 답안
   tasks: EvaluationTask[];
 }
 
