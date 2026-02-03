@@ -35,6 +35,7 @@ export interface LessonPlanTableRow {
   teacherActivities: string[];
   studentActivities: string[];
   materialsAndNotes: string[];
+  imageUrl?: string;
 }
 
 export interface EvaluationCriterion {

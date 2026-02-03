@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { TableLessonPlan, LessonPlanTableRow, EvaluationCriterion } from '../types';
+import { generateImageForStep } from '../services/geminiService';
 
 interface AutoGrowTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
 
@@ -52,6 +53,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
     const resizingColIndex = useRef<number | null>(null);
     const startX = useRef(0);
     const startWidths = useRef<number[]>([]);
+    const [isGeneratingImages, setIsGeneratingImages] = useState(false);
 
     useEffect(() => {
         if (tableRef.current && colWidths.length === 0) {
@@ -150,10 +152,67 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
         }
     };
 
+    const handleGenerateImages = async () => {
+        if (!confirm('모든 단계의 관련 사진을 AI로 자동 생성하시겠습니까? 시간이 다소 소요될 수 있습니다.')) return;
+
+        setIsGeneratingImages(true);
+        const newSteps = [...plan.steps];
+
+        try {
+            for (let i = 0; i < newSteps.length; i++) {
+                const step = newSteps[i];
+                if (step.imageUrl) continue;
+
+                const prompt = `
+                    Create a simple, bright, and educational illustration for an elementary school lesson slide.
+                    Subject: ${plan.metadata.subject}
+                    Topic: ${plan.metadata.topic}
+                    Phase: ${step.phase} - ${step.process}
+                    Teacher Activity: ${step.teacherActivities.join(', ')}
+                    Student Activity: ${step.studentActivities.join(', ')}
+                    Style: Vector art or clean illustration, no text inside the image.
+                `;
+
+                const imageUrl = await generateImageForStep(prompt);
+                if (imageUrl) {
+                    newSteps[i] = { ...step, imageUrl };
+                    onPlanChange({ ...plan, steps: [...newSteps] });
+                }
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('이미지 생성 중 오류가 발생했습니다.');
+        } finally {
+            setIsGeneratingImages(false);
+        }
+    };
+
     const tableTextSize = fontSize ? '' : 'text-sm';
 
     return (
         <div className="space-y-8" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
+            <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-slate-800">수업 정보</h3>
+                <button
+                    onClick={handleGenerateImages}
+                    disabled={isGeneratingImages}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md ${isGeneratingImages ? 'bg-slate-300' : 'bg-purple-600 hover:bg-purple-700'} text-white transition-colors shadow-sm`}
+                >
+                    {isGeneratingImages ? (
+                        <>
+                            <span className="animate-spin text-xl">✨</span>
+                            <span>사진 생성 중...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="text-xl">🎨</span>
+                            <span>AI 사진 자동 채우기</span>
+                        </>
+                    )}
+                </button>
+            </div>
+
             <div className="prose max-w-none">
                 <EditableField
                     isEditing={isEditing}
@@ -220,10 +279,11 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                         colWidths.map((width, i) => <col key={i} style={{ width: `${width}%` }} />)
                     ) : (
                         <>
+                            <col style={{ width: '10%' }} />
                             <col style={{ width: '15%' }} />
+                            <col style={{ width: '35%' }} />
+                            <col style={{ width: '25%' }} />
                             <col style={{ width: '15%' }} />
-                            <col style={{ width: '40%' }} />
-                            <col style={{ width: '30%' }} />
                         </>
                     )}
                 </colgroup>
@@ -241,7 +301,11 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                             교수·학습 활동
                             <div className="resizer" onMouseDown={(e) => handleMouseDown(2, e)}></div>
                         </th>
-                        <th className="border p-2">자료(·) 및 유의점(※)</th>
+                        <th className="border p-2">
+                            자료 및 유의점
+                            <div className="resizer" onMouseDown={(e) => handleMouseDown(3, e)}></div>
+                        </th>
+                        <th className="border p-2">PPT 사진</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -328,6 +392,30 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                                         </li>
                                     ))}
                                 </ul>
+                            </td>
+                            <td className="border p-2 align-top text-center w-32">
+                                {step.imageUrl ? (
+                                    <div className="relative group">
+                                        <img src={step.imageUrl} alt="PPT Slide" className="w-full h-auto rounded-md border border-slate-200 shadow-sm" />
+                                        {isEditing && (
+                                            <button
+                                                onClick={() => {
+                                                    const newSteps = [...plan.steps];
+                                                    delete newSteps[stepIndex].imageUrl;
+                                                    onPlanChange({ ...plan, steps: newSteps });
+                                                }}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                                                title="이미지 삭제"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-slate-300 text-xs italic p-4 text-center border border-dashed border-slate-200 rounded-md">
+                                        (생성 전)
+                                    </div>
+                                )}
                             </td>
                         </tr>
                     ))}

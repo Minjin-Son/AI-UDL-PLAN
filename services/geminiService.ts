@@ -799,11 +799,11 @@ const processEvaluationWorksheetSchema = {
                 grade: { type: Type.STRING, description: "학년 (예: '학년')" },
                 class: { type: Type.STRING, description: "반 (예: '반')" },
                 number: { type: Type.STRING, description: "번호 (예: '번')" },
-                name: { type: Type.STRING, description: "이름 (예: '이름: ')" },
+                name: { type: Type.STRING, description: "이름" }
             },
             required: ["grade", "class", "number", "name"]
         },
-        overallDescription: { type: Type.STRING },
+        overallDescription: { type: Type.STRING, description: "학생의 전반적인 수행 과정과 태도에 대한 서술형 평가 (예: '수업에 적극적으로 참여하며...')" },
         evaluationItems: {
             type: Type.ARRAY,
             items: {
@@ -813,9 +813,9 @@ const processEvaluationWorksheetSchema = {
                     levels: {
                         type: Type.OBJECT,
                         properties: {
-                            excellent: { type: Type.STRING },
-                            good: { type: Type.STRING },
-                            needsImprovement: { type: Type.STRING }
+                            excellent: { type: Type.STRING, description: "체크박스 표시 여부 (예: '■' 또는 '□')" },
+                            good: { type: Type.STRING, description: "체크박스 표시 여부" },
+                            needsImprovement: { type: Type.STRING, description: "체크박스 표시 여부" }
                         },
                         required: ["excellent", "good", "needsImprovement"]
                     }
@@ -826,13 +826,46 @@ const processEvaluationWorksheetSchema = {
         overallFeedback: {
             type: Type.OBJECT,
             properties: {
-                teacherComment: { type: Type.STRING },
-                studentReflection: { type: Type.STRING }
+                teacherComment: { type: Type.STRING, description: "교사의 격려 및 지도 조언" },
+                studentReflection: { type: Type.STRING, description: "학생의 자기 성찰 (빈칸으로 둠)" }
             },
             required: ["teacherComment", "studentReflection"]
         }
     },
     required: ["title", "studentInfo", "overallDescription", "evaluationItems", "overallFeedback"]
+};
+
+// Image Generation Function
+export const generateImageForStep = async (prompt: string): Promise<string | null> => {
+    try {
+        console.log(`Generating image with prompt: ${prompt}`);
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-image-preview",
+            contents: [
+                {
+                    role: "user",
+                    parts: [{ text: prompt }]
+                }
+            ],
+            config: {
+                // @ts-ignore
+                responseMimeType: "image/png",
+                // @ts-ignore
+                sampleCount: 1,
+            }
+        });
+
+        if (response && response.candidates && response.candidates.length > 0) {
+            const part = response.candidates[0].content?.parts?.[0];
+            if (part && 'inlineData' in part && part.inlineData) {
+                return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("Error generating image:", error);
+        return null;
+    }
 };
 
 export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInputs, udlEvaluationPlan?: UdlEvaluationPlan): Promise<ProcessEvaluationWorksheet> => {
