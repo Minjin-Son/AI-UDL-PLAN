@@ -1,4 +1,5 @@
 import { GeneratedLessonPlan, TableLessonPlan, Worksheet, UdlEvaluationPlan, ProcessEvaluationWorksheet } from '../types';
+import PptxGenJS from 'pptxgenjs';
 
 const escapeHtml = (text: string | undefined): string => {
     if (typeof text !== 'string') return '';
@@ -391,4 +392,103 @@ export const exportPlanAsHwp = (
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+};
+
+export const exportPlanAsPpt = async (
+    plan: GeneratedLessonPlan,
+    view: 'udl' | 'table' | 'worksheet' | 'udlEvaluation' | 'processEvaluation'
+) => {
+    // We prioritize Table Plan for slides as it has the timeline structure.
+    const tablePlan = plan.tablePlan;
+
+    if (!tablePlan) {
+        alert('PPT로 변환할 표 형식 지도안이 없습니다. 표 형식 지도안을 먼저 생성해주세요.');
+        return;
+    }
+
+    const pres = new PptxGenJS();
+    pres.layout = 'LAYOUT_16x9';
+
+    // 1. Cover Slide
+    let slide = pres.addSlide();
+    slide.background = { color: 'F1F5F9' }; // Slate-50
+    slide.addText(tablePlan.metadata.lessonTitle || plan.lessonTitle, {
+        x: 0.5, y: '40%', w: '90%', fontSize: 44, bold: true, align: 'center', color: '1e293b'
+    });
+    slide.addText(`${tablePlan.metadata.gradeLevel} ${tablePlan.metadata.subject} | ${tablePlan.metadata.topic}`, {
+        x: 0.5, y: '55%', w: '90%', fontSize: 24, align: 'center', color: '475569'
+    });
+    slide.addText(`수업 시간: ${tablePlan.metadata.duration}`, {
+        x: 0.5, y: '65%', w: '90%', fontSize: 18, align: 'center', color: '64748b'
+    });
+
+    // 2. Objectives Slide
+    slide = pres.addSlide();
+    slide.addText("학습 목표", { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '1e293b' });
+    slide.addShape(pres.ShapeType.rect, { x: 0.5, y: 1.3, w: '10%', h: 0.1, fill: { color: '6366f1' } }); // Divider
+    slide.addText(tablePlan.metadata.objectives, {
+        x: 0.5, y: 2.0, w: '90%', fontSize: 20, color: '334155', valign: 'top'
+    });
+
+    // 3. Materials Slide
+    slide = pres.addSlide();
+    slide.addText("준비물", { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '1e293b' });
+    slide.addShape(pres.ShapeType.rect, { x: 0.5, y: 1.3, w: '10%', h: 0.1, fill: { color: '6366f1' } });
+    slide.addText(tablePlan.metadata.materials.join(', '), {
+        x: 0.5, y: 2.0, w: '90%', fontSize: 20, color: '334155', valign: 'top'
+    });
+
+    // 4. Steps Slides
+    tablePlan.steps.forEach((step) => {
+        slide = pres.addSlide();
+
+        // Header
+        slide.addText(`${step.phase} - ${step.process}`, {
+            x: 0.5, y: 0.3, w: '90%', h: 0.8, fontSize: 24, bold: true, color: '1e293b', fill: { color: 'F1F5F9' }
+        });
+        slide.addText(`(${step.duration})`, {
+            x: '85%', y: 0.4, w: '10%', fontSize: 14, align: 'right', color: '64748b'
+        });
+
+        // Headers for Columns
+        slide.addText("교사 활동", { x: 0.5, y: 1.3, w: 4.5, fontSize: 18, bold: true, color: '0369a1' }); // Sky-700
+        slide.addText("학생 활동", { x: 5.2, y: 1.3, w: 4.5, fontSize: 18, bold: true, color: '0f766e' }); // Teal-700
+        slide.addText("자료 및 유의점", { x: 9.9, y: 1.3, w: 3.0, fontSize: 18, bold: true, color: 'b45309' }); // Amber-700
+
+        // Content Columns
+        const teacherText = step.teacherActivities.map(act => `• ${act}`).join('\n');
+        slide.addText(teacherText, { x: 0.5, y: 1.8, w: 4.5, h: 5.0, fontSize: 14, color: '334155', valign: 'top', wrap: true });
+
+        const studentText = step.studentActivities.map(act => `• ${act}`).join('\n');
+        slide.addText(studentText, { x: 5.2, y: 1.8, w: 4.5, h: 5.0, fontSize: 14, color: '334155', valign: 'top', wrap: true });
+
+        const materialsText = step.materialsAndNotes.map(note => `• ${note}`).join('\n');
+        slide.addText(materialsText, { x: 9.9, y: 1.8, w: 3.0, h: 5.0, fontSize: 12, color: '475569', valign: 'top', wrap: true });
+    });
+
+    // 5. Evaluation Slide
+    if (tablePlan.evaluationPlan && tablePlan.evaluationPlan.criteria.length > 0) {
+        slide = pres.addSlide();
+        slide.addText("평가 계획", { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '1e293b' });
+        slide.addShape(pres.ShapeType.rect, { x: 0.5, y: 1.3, w: '10%', h: 0.1, fill: { color: '6366f1' } });
+
+        let startY = 2.0;
+        tablePlan.evaluationPlan.criteria.forEach((crit) => {
+            // Check for space
+            if (startY > 6.0) {
+                slide = pres.addSlide();
+                slide.addText("평가 계획 (계속)", { x: 0.5, y: 0.5, w: '90%', h: 1, fontSize: 32, bold: true, color: '1e293b' });
+                startY = 2.0;
+            }
+
+            slide.addText(`평가 내용: ${crit.content}`, { x: 0.5, y: startY, w: '90%', fontSize: 16, bold: true, color: '334155' });
+            slide.addText(`평가 방법: ${crit.method}`, { x: 0.5, y: startY + 0.4, w: '90%', fontSize: 14, color: '475569' });
+            slide.addText(`- 상: ${crit.excellent}`, { x: 1.0, y: startY + 0.8, w: '85%', fontSize: 12, color: '475569' });
+            slide.addText(`- 중: ${crit.good}`, { x: 1.0, y: startY + 1.1, w: '85%', fontSize: 12, color: '475569' });
+            slide.addText(`- 하: ${crit.needsImprovement}`, { x: 1.0, y: startY + 1.4, w: '85%', fontSize: 12, color: '475569' });
+            startY += 2.0;
+        });
+    }
+
+    pres.writeFile({ fileName: `${tablePlan.metadata.lessonTitle}.pptx` });
 };
