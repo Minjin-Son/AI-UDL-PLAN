@@ -464,25 +464,32 @@ export const exportPlanAsPpt = async (
         });
 
         // Right Content: Image Placeholder or Actual Image
-        if (step.imageUrl) {
-            slide.addImage({
-                data: step.imageUrl,
-                x: 7.0, y: 1.4, w: 5.5, h: 4.5,
-                sizing: { type: 'contain', w: 5.5, h: 4.5 }
-            });
-        } else {
-            // A visual box for the user to insert an image
-            slide.addShape(pres.ShapeType.rect, {
-                x: 7.0, y: 1.4, w: 5.5, h: 4.5,
-                fill: { color: 'F1F5F9' },
-                line: { color: 'cbd5e1', width: 2, dashType: 'dash' }
-            });
+        // Right Content: Image Placeholder
+        // A visual box for the user to insert an image
+        slide.addShape(pres.ShapeType.rect, {
+            x: 7.0, y: 1.4, w: 5.5, h: 4.5,
+            fill: { color: 'F1F5F9' },
+            line: { color: 'cbd5e1', width: 2, dashType: 'dash' }
+        });
 
-            slide.addText("관련 사진 넣기", {
-                x: 7.0, y: 3.4, w: 5.5, h: 0.5,
-                align: 'center', fontSize: 16, color: '94a3b8'
-            });
-        }
+        slide.addText("관련 사진 넣기", {
+            x: 7.0, y: 3.4, w: 5.5, h: 0.5,
+            align: 'center', fontSize: 16, color: '94a3b8'
+        });
+
+        // Add AI Image Generation Prompt to Slide Notes
+        // This allows the user to generate images "inside" PPT (e.g. using Copilot or manually)
+        const imagePrompt = `
+[AI Image Prompt]
+Create a simple, bright, and educational illustration for an elementary school lesson slide.
+- Subject: ${tablePlan.metadata.subject}
+- Topic: ${tablePlan.metadata.topic}
+- Phase: ${step.phase} - ${step.process}
+- Activities: ${step.teacherActivities.join(', ')} / ${step.studentActivities.join(', ')}
+- Style: Vector art, clean lines, white background, NO TEXT.
+        `.trim();
+
+        slide.addNotes(imagePrompt);
 
         // Bottom Note: Materials/Notes (Optional but good for richness, kept small)
         if (step.materialsAndNotes.length > 0) {
