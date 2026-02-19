@@ -112,24 +112,31 @@ const getTablePlanAsHtml = (plan: TableLessonPlan): string => {
 
 const getWorksheetAsHtml = (plan: Worksheet): string => {
     let html = `<p>${escapeHtml(plan.description)}</p>`;
-    plan.levels.forEach(level => {
+    plan.levels.forEach((level, index) => {
+        // Add page break before every level except the first one
+        const pageBreakStyle = index > 0 ? 'page-break-before: always;' : '';
+
         html += `
-            <table style="border: 1px solid #e2e8f0; width: 100%; margin-bottom: 16px; page-break-inside: avoid;">
-                <tr>
-                    <td style="padding: 12px; border: none !important;">
-                        <h4>[${escapeHtml(level.levelName)}] ${escapeHtml(level.title)}</h4>
-                        ${level.activities.map(act => `
-                            <div style="margin-top: 12px; padding: 10px; background-color: #f8fafc; border-radius: 4px;">
-                                <p><strong>${escapeHtml(act.title)}</strong></p>
-                                <p><i>${escapeHtml(act.description)}</i></p>
-                                <div style="margin-top: 8px; padding: 12px; border: 1px dashed #cbd5e1; background-color: #fff;">
-                                    ${escapeHtml(act.content).replace(/\n/g, '<br/>')}
+            <div style="${pageBreakStyle} width: 100%;">
+                <table style="border: 1px solid #e2e8f0; width: 100%; margin-bottom: 16px; border-collapse: collapse; table-layout: fixed; page-break-inside: auto;">
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e2e8f0;">
+                            <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 14pt; border-bottom: 2px solid #333; padding-bottom: 8px;">
+                                [${escapeHtml(level.levelName)}] ${escapeHtml(level.title)}
+                            </h4>
+                            ${level.activities.map(act => `
+                                <div style="margin-top: 12px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                    <p style="margin-bottom: 4px;"><strong>${escapeHtml(act.title)}</strong></p>
+                                    ${act.description ? `<p style="margin-bottom: 8px; color: #64748b; font-size: 0.9em;"><i>${escapeHtml(act.description)}</i></p>` : ''}
+                                    <div style="margin-top: 8px; padding: 8px; background-color: #f8fafc; border: 1px dashed #cbd5e1; min-height: 50px;">
+                                        ${escapeHtml(act.content).replace(/\n/g, '<br/>')}
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </td>
-                </tr>
-            </table>
+                            `).join('')}
+                        </td>
+                    </tr>
+                </table>
+            </div>
         `;
     });
     return html;
