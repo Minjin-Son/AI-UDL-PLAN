@@ -36,7 +36,7 @@ const generateImageForActivity = async (
         - Structure: Title at top, clear header with name/grade lines.
         - Content: Organized sections with geometric shapes for questions, empty boxes for answers, lines for writing.
         - Diagrams: Include a clear, scientific or educational diagram relevant to the topic in the center.
-        - Text: Use illegible scribbles or block text for layout purposes (pseudotext), but keep the layout very professional and structured.
+        - Text Typography: Render the text (such as Title "${activityTitle}") with absolute typographic accuracy. Ensure all Korean characters and words are perfectly legible, spelled correctly, and completely free of typos or garbled letters.
         - Background: Pure white paper.
         
         [Goal]
