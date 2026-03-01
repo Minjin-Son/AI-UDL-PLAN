@@ -20,7 +20,7 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
     // This dummy function is needed because the display components expect it, even in read-only mode.
     const dummyOnPlanChange = () => { };
 
-    // [수정됨] 모든 하위 컴포넌트에 적용될 인쇄 스타일
+    // [수정됨] 모든 하위 컴포넌트에 적용될 인쇄 및 미리보기 스타일
     const printStyles = `
     @media print {
         /* A4 페이지 크기 및 여백 설정 */
@@ -34,72 +34,48 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
+    }
 
-        /* 인쇄 시 불필요한 여백, 그림자 제거 */
-        .printable-content {
-            padding: 0 !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-        }
-
-        /* --- 페이지 나눔 제어 --- */
-
-        /* 각 PrintSection이 새 페이지에서 시작하도록 강제 */
-        .page-break-before {
-            page-break-before: always;
-        }
-        
-        /* 섹션 제목이 내용과 분리되지 않도록 함 */
-        .print-section-header {
-            page-break-after: avoid !important;
-        }
-
-        /* 제목 블록이 잘리지 않도록 함 */
-        .page-break-avoid {
-            page-break-inside: avoid !important;
-        }
-
-        /* 핵심: 모든 표의 행(tr)이 페이지 중간에 잘리지 않도록 함 */
-        /* UDLDisplay, TableDisplay, UdlEvaluationDisplay, ProcessEvaluationDisplay의 표에 모두 적용됨 */
-        tr {
-            page-break-inside: avoid !important;
-        }
-
-        /* 표 자체는 길면 다음 페이지로 넘어갈 수 있도록 허용 */
-        table {
-            page-break-inside: auto;
-        }
-        
-        /* 표가 페이지를 넘어가면 헤더를 반복 표시 */
-        thead {
-            display: table-header-group;
-        }
-
-        /* UDLDisplay의 중첩 테이블(.inner-table)도 잘림 방지 */
-        .inner-table {
-            page-break-inside: avoid !important;
-        }
-
-        /* WorksheetDisplay의 각 수준별 섹션이 잘리지 않도록 함 (클래스명 추정) */
-        .worksheet-level-section {
-            page-break-inside: avoid !important;
-        }
-        
-        /* --- 스타일 강제 적용 --- */
-
-        /* 연한 배경색 강제 인쇄 (가독성) */
+    /* 공통 인쇄/미리보기 스타일 */
+    @media print {
+        .printable-content { padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
+        .page-break-before { page-break-before: always; }
+        .print-section-header { page-break-after: avoid !important; }
+        .page-break-avoid { page-break-inside: avoid !important; }
+        tr { page-break-inside: avoid !important; }
+        table { page-break-inside: auto; }
+        thead { display: table-header-group; }
+        .inner-table { page-break-inside: avoid !important; }
+        .worksheet-level-section { page-break-inside: avoid !important; }
         .bg-slate-50 { background-color: #f8fafc !important; }
         .bg-slate-100 { background-color: #f1f5f9 !important; }
-
-        /* 텍스트 색상 강제 (검정) */
-        .text-slate-800, .text-slate-900, .font-bold, .font-semibold, .font-extrabold {
-            color: #000 !important;
-        }
-        .text-slate-500 {
-            color: #333 !important;
-        }
+        .text-slate-800, .text-slate-900, .font-bold, .font-semibold, .font-extrabold { color: #000 !important; }
+        .text-slate-500 { color: #333 !important; }
     }
+
+    /* 인쇄 미리보기 전용 (화면 표시용) 스타일 */
+    .print-preview-mode {
+        padding: 1.5cm !important; /* 인쇄 여백과 동일하게 설정 */
+        box-sizing: border-box;
+    }
+    .print-preview-mode .printable-content { padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
+    .print-preview-mode .page-break-before { 
+        page-break-before: always; 
+        border-top: 2px dashed #cbd5e1; /* 화면에서는 구분선으로 페이지 나눔 표시 */
+        margin-top: 2rem; 
+        padding-top: 2rem; 
+    }
+    .print-preview-mode .print-section-header { page-break-after: avoid !important; }
+    .print-preview-mode .page-break-avoid { page-break-inside: avoid !important; }
+    .print-preview-mode tr { page-break-inside: avoid !important; }
+    .print-preview-mode table { page-break-inside: auto; }
+    .print-preview-mode thead { display: table-header-group; }
+    .print-preview-mode .inner-table { page-break-inside: avoid !important; }
+    .print-preview-mode .worksheet-level-section { page-break-inside: avoid !important; }
+    .print-preview-mode .bg-slate-50 { background-color: #f8fafc !important; }
+    .print-preview-mode .bg-slate-100 { background-color: #f1f5f9 !important; }
+    .print-preview-mode .text-slate-800, .print-preview-mode .text-slate-900, .print-preview-mode .font-bold, .print-preview-mode .font-semibold, .print-preview-mode .font-extrabold { color: #000 !important; }
+    .print-preview-mode .text-slate-500 { color: #333 !important; }
   `;
 
     return (
