@@ -139,7 +139,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -172,7 +172,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
             `;
 
             const analysisResponse = await ai.models.generateContent({
-                model: "gemini-3-pro-preview",
+                model: "gemini-3-flash",
                 contents: analysisPrompt,
                 config: {
                     responseMimeType: "application/json",
@@ -311,7 +311,7 @@ export const generateTableLessonPlan = async (inputs: LessonPlanInputs): Promise
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -357,7 +357,7 @@ export const generateLessonTopics = async (gradeLevel: string, semester: string,
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -435,7 +435,7 @@ export const generateAchievementStandards = async (gradeLevel: string, semester:
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -505,7 +505,7 @@ export const generateLearningObjectiveOptions = async (
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview", // (사용 중이신 모델)
+            model: "gemini-3-flash", // (사용 중이신 모델)
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -637,7 +637,7 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -771,7 +771,7 @@ export const generateUdlEvaluationPlan = async (inputs: LessonPlanInputs): Promi
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -840,7 +840,7 @@ export const generateImageForStep = async (prompt: string): Promise<string | nul
     try {
         console.log(`Generating image with prompt: ${prompt}`);
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-image-preview",
+            model: "nano-banana-2",
             contents: [
                 {
                     role: "user",
@@ -904,7 +904,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-3-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -957,7 +957,7 @@ export const reviseUDLLessonPlan = async (
             // ✅ 선생님의 기존 API 호출 방식 사용
             // @ts-ignore - response 타입 추론을 위해 무시
             const response = await ai.models.generateContent({
-                model: "gemini-3.1-pro-preview", // Pro 모델 사용
+                model: "gemini-3-flash", // Pro 모델 사용
                 contents: prompt,
                 config: {
                     responseMimeType: "application/json",
@@ -1010,7 +1010,7 @@ export const generateImageForActivity = async (
     const delayMs = 2000;
 
     // (API Key 방식)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:predict?key=${process.env.API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-2:predict?key=${process.env.API_KEY}`;
 
     const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.

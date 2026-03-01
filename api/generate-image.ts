@@ -63,8 +63,8 @@ const generateImageForActivity = async (
       `.trim();
   }
 
-  // Nano Banana Pro (Gemini 3 Pro Image) 모델 사용
-  const modelId = "gemini-3-pro-image-preview";
+  // Nano Banana 2 모델 사용
+  const modelId = "nano-banana-2";
 
   try {
     console.log(`🖼️ Image Gen Request to ${modelId} (Worksheet Mode: ${isWorksheet})`);
