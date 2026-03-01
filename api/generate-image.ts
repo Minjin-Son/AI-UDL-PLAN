@@ -64,7 +64,7 @@ const generateImageForActivity = async (
   }
 
   // Nano Banana 2 모델 사용
-  const modelId = "nano-banana-2";
+  const modelId = "gemini-3.1-flash-image-preview";
 
   try {
     console.log(`🖼️ Image Gen Request to ${modelId} (Worksheet Mode: ${isWorksheet})`);

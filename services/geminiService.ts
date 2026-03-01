@@ -840,7 +840,7 @@ export const generateImageForStep = async (prompt: string): Promise<string | nul
     try {
         console.log(`Generating image with prompt: ${prompt}`);
         const response = await ai.models.generateContent({
-            model: "nano-banana-2",
+            model: "gemini-3.1-flash-image-preview",
             contents: [
                 {
                     role: "user",
@@ -1010,7 +1010,7 @@ export const generateImageForActivity = async (
     const delayMs = 2000;
 
     // (API Key 방식)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-2:predict?key=${process.env.API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:predict?key=${process.env.API_KEY}`;
 
     const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
