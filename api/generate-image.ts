@@ -63,52 +63,55 @@ const generateImageForActivity = async (
       `.trim();
   }
 
-  // Nano Banana 2 모델 사용
-  const modelId = "gemini-3.1-flash-image-preview";
+  // Image Generation Models (fallback options)
+  const candidateModels = [
+    "gemini-2.5-flash-image",
+    "gemini-2.5-flash-image-preview",
+    "gemini-3-pro-image-preview"
+  ];
 
-  try {
-    console.log(`🖼️ Image Gen Request to ${modelId} (Worksheet Mode: ${isWorksheet})`);
+  let lastError: any = null;
 
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { text: detailedPrompt }
-          ]
-        }
-      ],
-      config: {
-        sampleCount: 1,
-      } as any
-    });
+  for (const modelId of candidateModels) {
+    try {
+      console.log(`🖼️ Image Gen Request to ${modelId} (Worksheet Mode: ${isWorksheet})`);
 
-    const candidates = response.candidates;
-    if (!candidates || candidates.length === 0) {
-      throw new Error("No candidates returned");
+      const response = await ai.models.generateContent({
+        model: modelId,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: detailedPrompt }
+            ]
+          }
+        ],
+        config: {
+          sampleCount: 1,
+        } as any
+      });
+
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) {
+        continue;
+      }
+
+      const firstPart = candidates[0].content?.parts?.[0];
+
+      if (firstPart?.inlineData?.data) {
+        return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
+      }
+
+      if (firstPart?.text) {
+        console.warn(`Model ${modelId} returned text instead of image:`, firstPart.text);
+      }
+    } catch (err: any) {
+      console.warn(`Model ${modelId} failed:`, err?.message || err);
+      lastError = err;
     }
-
-    const firstPart = candidates[0].content?.parts?.[0];
-
-    if (firstPart?.inlineData?.data) {
-      return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
-    }
-
-    if (firstPart?.text) {
-      console.warn("Image generation returned text instead of image:", firstPart.text);
-      throw new Error(`Image generation failed: ${firstPart.text}`);
-    }
-
-    throw new Error("No image data found in response");
-
-  } catch (error: any) {
-    console.error("Image Gen Error:", error);
-    if (error.response) {
-      console.error("Error Response:", JSON.stringify(error.response, null, 2));
-    }
-    throw error;
   }
+
+  throw new Error(lastError?.message || "No image data found in response from any candidate model");
 };
 
 // --- 메인 핸들러 ---
