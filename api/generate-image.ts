@@ -2,15 +2,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from "@google/genai";
 
-// ✅ [핵심] GoogleGenAI SDK를 사용하여 구현
 const generateImageForActivity = async (
   activityTitle: string,
   activityContent: string,
   originalImagePrompt: string,
-  isWorksheet: boolean = false // ✅ 새로운 플래그 추가
+  isWorksheet: boolean = false,
+  metadata?: any,
+  levelName?: string,
+  activities?: any[]
 ): Promise<string> => {
-
-  // Vercel 환경변수에서 API Key를 가져옵니다.
   const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
   if (!apiKey) {
@@ -19,96 +19,112 @@ const generateImageForActivity = async (
 
   const ai = new GoogleGenAI({ apiKey });
 
+  const gradeInfo = metadata?.grade || "초등학교";
+  const subjectInfo = metadata?.subject || "수업";
+  const topicInfo = metadata?.topic || originalImagePrompt || activityTitle;
+  const levelInfo = levelName || "기본";
+
   let detailedPrompt = "";
 
   if (isWorksheet) {
-    // ✅ 활동지 자체를 생성하는 프롬프트
+    const activitySummaries = Array.isArray(activities)
+      ? activities.map((a, i) => `${i + 1}. [${a.title || '활동'}] ${a.content || a.description || ''}`).join('\n')
+      : `${activityTitle}: ${activityContent}`;
+
     detailedPrompt = `
-        Create a high-quality, realistic image of a printed educational worksheet.
-        
-        [Context]
-        - Subject/Title: "${activityTitle}"
-        - Topic: "${originalImagePrompt}"
-        - Content hint: "${activityContent.substring(0, 100)}..."
-        
-        [Visual Style]
-        - A4 Paper layout, clean black and white lines.
-        - Structure: Title at top, clear header with name/grade lines.
-        - Content: Organized sections with geometric shapes for questions, empty boxes for answers, lines for writing.
-        - Diagrams: Include a clear, scientific or educational diagram relevant to the topic in the center.
-        - Text Typography: Render the text (such as Title "${activityTitle}") with absolute typographic accuracy. Ensure all Korean characters and words are perfectly legible, spelled correctly, and completely free of typos or garbled letters.
-        - Background: Pure white paper.
-        
-        [Goal]
-        - The image should look like a professional teacher's handout ready to be printed.
-      `.trim();
+      Create a high-resolution, printable A4 educational worksheet for elementary/middle school students.
+      
+      [Header Information]
+      - Grade & Subject: ${gradeInfo} ${subjectInfo}
+      - Worksheet Level: [${levelInfo} 과정]
+      - Lesson Topic: "${topicInfo}"
+      - Title: "${activityTitle}"
+      
+      [Worksheet Content & Structure]
+      - Top section: Clear title header with student information boxes (Grade: __, Class: __, No: __, Name: __).
+      - Main section: Cleanly structured questions and activities based on:
+${activitySummaries}
+      - Includes clear geometric answer boxes, ruled lines for writing answers, and neat table grids.
+      - Includes a clean black-and-white educational diagram or scientific illustration relevant to "${topicInfo}".
+      
+      [Crucial Visual Rules - MUST FOLLOW]
+      1. BACKGROUND: Pure, solid white background ONLY (#FFFFFF). Absolutely NO wooden desk, NO background table, NO drop shadows, NO borders or environment outside the white paper.
+      2. FORMAT: Portrait A4 paper layout (3:4 aspect ratio), clean black line art style.
+      3. QUALITY: High quality, clean typography, ready for printing directly on A4 paper for actual classroom use.
+    `.trim();
   } else {
-    // 기존의 삽화 프롬프트
     detailedPrompt = `
-        Create a simple, clear educational illustration for an elementary school worksheet.
-        
-        [Context]
-        - Activity Title: "${activityTitle}"
-        - Visual Idea: "${originalImagePrompt}"
-        - Content Context: "${activityContent.substring(0, 100)}..." 
-        
-        [Style Guide]
-        - Style: Clean line art or simple flat vector illustration.
-        - Background: Pure white background.
-        - Target Audience: Elementary school students.
-        
-        [Critical Rules]
-        - ABSOLUTELY NO TEXT, NO CHARACTERS, NO LETTERS inside the image.
-        - Focus ONLY on visual elements.
-      `.trim();
+      Create a clean, simple educational illustration for an elementary school worksheet.
+      
+      [Subject & Topic]
+      - Topic: "${topicInfo}"
+      - Activity: "${activityTitle}"
+      - Visual Details: "${originalImagePrompt}"
+      
+      [Crucial Visual Rules]
+      1. BACKGROUND: Pure, solid white background ONLY (#FFFFFF). Absolutely NO background scene, NO shadows.
+      2. STYLE: Clean line art or simple flat vector illustration with bright, clear colors.
+      3. NO TEXT: Absolutely NO text, NO letters, NO numbers inside the image.
+    `.trim();
   }
 
-  // Nano Banana 2 모델 사용
-  const modelId = "gemini-3.5-flash";
+  const candidateModels = [
+    { type: 'genai', name: 'gemini-2.5-flash-image' },
+    { type: 'genai', name: 'gemini-2.5-flash-image-preview' },
+    { type: 'imagen', name: 'imagen-3.0-generate-002' },
+    { type: 'imagen', name: 'imagen-4.0-generate-001' },
+    { type: 'imagen', name: 'imagen-4.0-fast-generate-001' },
+  ];
 
-  try {
-    console.log(`🖼️ Image Gen Request to ${modelId} (Worksheet Mode: ${isWorksheet})`);
+  let lastError: any = null;
 
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: [
-        {
-          role: "user",
-          parts: [
-            { text: detailedPrompt }
-          ]
+  for (const item of candidateModels) {
+    try {
+      console.log(`🖼️ Image Gen Request to ${item.name} (Type: ${item.type}, Worksheet Mode: ${isWorksheet})`);
+
+      if (item.type === 'imagen') {
+        const response = await (ai.models as any).generateImages({
+          model: item.name,
+          prompt: detailedPrompt,
+          config: {
+            numberOfImages: 1,
+            outputMimeType: 'image/png',
+            aspectRatio: '3:4',
+          },
+        });
+
+        if (response.generatedImages?.[0]?.image?.imageBytes) {
+          return `data:image/png;base64,${response.generatedImages[0].image.imageBytes}`;
         }
-      ],
-      config: {
-        sampleCount: 1,
-      } as any
-    });
+      } else {
+        const response = await ai.models.generateContent({
+          model: item.name,
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: detailedPrompt }]
+            }
+          ],
+          config: {
+            sampleCount: 1,
+          } as any
+        });
 
-    const candidates = response.candidates;
-    if (!candidates || candidates.length === 0) {
-      throw new Error("No candidates returned");
+        const candidates = response.candidates;
+        if (candidates && candidates.length > 0) {
+          const firstPart = candidates[0].content?.parts?.[0];
+          if (firstPart?.inlineData?.data) {
+            return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn(`Model ${item.name} failed:`, err?.message || err);
+      lastError = err;
     }
-
-    const firstPart = candidates[0].content?.parts?.[0];
-
-    if (firstPart?.inlineData?.data) {
-      return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
-    }
-
-    if (firstPart?.text) {
-      console.warn("Image generation returned text instead of image:", firstPart.text);
-      throw new Error(`Image generation failed: ${firstPart.text}`);
-    }
-
-    throw new Error("No image data found in response");
-
-  } catch (error: any) {
-    console.error("Image Gen Error:", error);
-    if (error.response) {
-      console.error("Error Response:", JSON.stringify(error.response, null, 2));
-    }
-    throw error;
   }
+
+  throw new Error(lastError?.message || "이미지 생성 실패: 유효한 이미지 생성 응답이 없습니다.");
 };
 
 // --- 메인 핸들러 ---
@@ -118,13 +134,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { title, content, imagePrompt, isWorksheet } = req.body; // ✅ isWorksheet 파라미터 받기
+    const { title, content, imagePrompt, isWorksheet, metadata, levelName, activities } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ error: '필수 정보가 누락되었습니다.' });
     }
 
-    const base64Image = await generateImageForActivity(title, content, imagePrompt, isWorksheet);
+    const base64Image = await generateImageForActivity(
+      title,
+      content,
+      imagePrompt,
+      isWorksheet,
+      metadata,
+      levelName,
+      activities
+    );
 
     return res.status(200).json({ image: base64Image });
 

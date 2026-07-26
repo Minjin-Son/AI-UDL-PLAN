@@ -100,15 +100,18 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
           title,
           content,
           imagePrompt: prompt || title,
-          isWorksheet: isWorksheetMode
+          isWorksheet: isWorksheetMode,
+          metadata: plan.metadata,
+          levelName: plan.levels[levelIndex]?.levelName,
+          activities: plan.levels[levelIndex]?.activities
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || '이미지 생성 실패');
       setGeneratedImages(prev => ({ ...prev, [key]: data.image }));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("이미지를 생성하는 중 오류가 발생했습니다.");
+      alert(`이미지를 생성하는 중 오류가 발생했습니다: ${error.message || '다시 시도해 주세요.'}`);
     } finally {
       setLoadingImages(prev => ({ ...prev, [key]: false }));
     }
