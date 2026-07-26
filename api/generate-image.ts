@@ -68,12 +68,12 @@ ${activitySummaries}
     `.trim();
   }
 
+  // 사용 가능한 유효 모델 목록 (구버전/중단 모델 제외)
   const candidateModels = [
     { type: 'genai', name: 'gemini-2.5-flash-image' },
     { type: 'genai', name: 'gemini-2.5-flash-image-preview' },
     { type: 'imagen', name: 'imagen-3.0-generate-002' },
-    { type: 'imagen', name: 'imagen-4.0-generate-001' },
-    { type: 'imagen', name: 'imagen-4.0-fast-generate-001' },
+    { type: 'imagen', name: 'imagen-3.0-fast-generate-001' },
   ];
 
   let lastError: any = null;
@@ -83,18 +83,37 @@ ${activitySummaries}
       console.log(`🖼️ Image Gen Request to ${item.name} (Type: ${item.type}, Worksheet Mode: ${isWorksheet})`);
 
       if (item.type === 'imagen') {
-        const response = await (ai.models as any).generateImages({
-          model: item.name,
-          prompt: detailedPrompt,
-          config: {
-            numberOfImages: 1,
-            outputMimeType: 'image/png',
-            aspectRatio: '3:4',
-          },
-        });
+        try {
+          const response = await (ai.models as any).generateImages({
+            model: item.name,
+            prompt: detailedPrompt,
+            config: {
+              numberOfImages: 1,
+              outputMimeType: 'image/png',
+              aspectRatio: '3:4',
+            },
+          });
 
-        if (response.generatedImages?.[0]?.image?.imageBytes) {
-          return `data:image/png;base64,${response.generatedImages[0].image.imageBytes}`;
+          if (response?.generatedImages?.[0]?.image?.imageBytes) {
+            return `data:image/png;base64,${response.generatedImages[0].image.imageBytes}`;
+          }
+        } catch (e: any) {
+          console.warn(`Imagen SDK call for ${item.name} failed, trying REST predict:`, e?.message || e);
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${item.name}:predict?key=${apiKey}`;
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instances: [{ prompt: detailedPrompt }],
+              parameters: { sampleCount: 1, aspectRatio: '3:4' }
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.predictions?.[0]?.bytesBase64Encoded) {
+              return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+            }
+          }
         }
       } else {
         const response = await ai.models.generateContent({
@@ -124,7 +143,7 @@ ${activitySummaries}
     }
   }
 
-  throw new Error(lastError?.message || "이미지 생성 실패: 유효한 이미지 생성 응답이 없습니다.");
+  throw new Error(lastError?.message || "이미지 생성 실패: 유효한 이미지 생성 응답을 받지 못했습니다.");
 };
 
 // --- 메인 핸들러 ---
