@@ -4,12 +4,6 @@ import { achievementStandardsDB } from '../data/achievementStandards';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const cleanAndParseJSON = <T>(text: string): T => {
-    let clean = (text || '').trim();
-    clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-    return JSON.parse(clean) as T;
-};
-
 // AI가 생성할 기본 지도안의 데이터 설계도
 const responseSchema = {
     type: Type.OBJECT,
@@ -579,12 +573,14 @@ const worksheetSchema = {
                                             items: { type: Type.ARRAY, items: { type: Type.STRING } },
                                             description: "빈 칸은 빈 문자열로 두어 학생이 채우도록 함"
                                         }
-                                    }
+                                    },
+                                    nullable: true
                                 },
-                                boxHeight: { type: Type.NUMBER, description: "drawing 유형일 경우 상자의 높이 (px 단위, 예: 200)" },
+                                boxHeight: { type: Type.NUMBER, description: "drawing 유형일 경우 상자의 높이 (px 단위, 예: 200)", nullable: true },
                                 imagePrompt: {
                                     type: Type.STRING,
-                                    description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)"
+                                    description: "해당 활동 내용에 어울리는 간단한 삽화 이미지 생성을 위한 프롬프트 아이디어 (한국어, 없을 경우 생략 가능)",
+                                    nullable: true
                                 }
                             },
                             required: ["type", "title", "description", "content"]
@@ -650,7 +646,8 @@ export const generateWorksheet = async (inputs: LessonPlanInputs): Promise<Works
             },
         });
 
-        return cleanAndParseJSON<Worksheet>(response.text);
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText) as Worksheet;
 
     } catch (error) {
         console.error("Error generating worksheet:", error);
@@ -843,7 +840,7 @@ export const generateImageForStep = async (prompt: string): Promise<string | nul
     try {
         console.log(`Generating image with prompt: ${prompt}`);
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3.6-flash",
             contents: [
                 {
                     role: "user",
@@ -1013,7 +1010,7 @@ export const generateImageForActivity = async (
     const delayMs = 2000;
 
     // (API Key 방식)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:predict?key=${process.env.API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:predict?key=${process.env.API_KEY}`;
 
     const detailedPrompt = `
     Create a simple, clear educational illustration for an elementary school worksheet.
