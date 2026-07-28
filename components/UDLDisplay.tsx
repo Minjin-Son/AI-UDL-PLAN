@@ -108,7 +108,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">전체</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">
+                            모든 학생<span className="block text-xs font-normal text-slate-500">(ALL / 중 수준 70%)</span>
+                        </td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -119,7 +121,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">일부</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">
+                            일부 학생<span className="block text-xs font-normal text-slate-500">(SOME / 상 수준 15%)</span>
+                        </td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -130,7 +134,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">소수</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">
+                            소수 학생<span className="block text-xs font-normal text-slate-500">(A FEW / 하 수준 15%)</span>
+                        </td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
