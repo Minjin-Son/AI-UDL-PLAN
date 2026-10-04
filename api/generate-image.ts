@@ -68,9 +68,9 @@ ${activitySummaries}
     `.trim();
   }
 
-  // 이미지 생성 전용 모델로 gemini-3.1-flash-image 통일
+  // 이미지 생성 전용 모델로 gemini-3.1-flash-lite-image 통일
   const candidateModels = [
-    { type: 'genai', name: 'gemini-3.1-flash-image' },
+    { type: 'genai', name: 'gemini-3.1-flash-lite-image' },
   ];
 
   let lastError: any = null;
@@ -105,7 +105,7 @@ ${activitySummaries}
     }
   }
 
-  throw new Error(lastError?.message || "이미지 생성 실패: gemini-3.1-flash-image 모델에서 유효한 이미지 응답을 받지 못했습니다.");
+  throw new Error(lastError?.message || "이미지 생성 실패: gemini-3.1-flash-lite-image 모델에서 유효한 이미지 응답을 받지 못했습니다.");
 };
 
 // --- 메인 핸들러 ---
