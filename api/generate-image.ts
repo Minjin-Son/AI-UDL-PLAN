@@ -28,7 +28,14 @@ const generateImageForActivity = async (
 
   if (isWorksheet) {
     const activitySummaries = Array.isArray(activities)
-      ? activities.map((a, i) => `${i + 1}. [${a.title || '활동'}] ${a.content || a.description || ''}`).join('\n')
+      ? activities.map((a, i) => {
+          const desc = a.description || '';
+          const body = a.content || '';
+          const tableText = a.tableData
+            ? ` [표 항목: ${(a.tableData.headers || []).join(' | ')} / ${(a.tableData.rows || []).map((r: string[]) => r.join(' | ')).join('; ')}]`
+            : '';
+          return `${i + 1}. [${a.title || '활동'}] ${desc} ${body}${tableText}`.trim();
+        }).join('\n')
       : `${activityTitle}: ${activityContent}`;
 
     detailedPrompt = `
@@ -94,9 +101,10 @@ ${activitySummaries}
 
       const candidates = response.candidates;
       if (candidates && candidates.length > 0) {
-        const firstPart = candidates[0].content?.parts?.[0];
-        if (firstPart?.inlineData?.data) {
-          return `data:${firstPart.inlineData.mimeType || 'image/png'};base64,${firstPart.inlineData.data}`;
+        const parts = candidates[0].content?.parts || [];
+        const imagePart = parts.find((p: any) => p?.inlineData?.data);
+        if (imagePart?.inlineData?.data) {
+          return `data:${imagePart.inlineData.mimeType || 'image/png'};base64,${imagePart.inlineData.data}`;
         }
       }
     } catch (err: any) {
@@ -117,14 +125,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { title, content, imagePrompt, isWorksheet, metadata, levelName, activities } = req.body;
 
-    if (!title || !content) {
+    const safeTitle = title || imagePrompt || '활동지';
+    const safeContent = content || activities?.[0]?.description || imagePrompt || safeTitle;
+
+    if (!safeTitle) {
       return res.status(400).json({ error: '필수 정보가 누락되었습니다.' });
     }
 
     const base64Image = await generateImageForActivity(
-      title,
-      content,
-      imagePrompt,
+      safeTitle,
+      safeContent,
+      imagePrompt || safeTitle,
       isWorksheet,
       metadata,
       levelName,

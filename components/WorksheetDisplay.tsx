@@ -98,7 +98,7 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          content,
+          content: content || plan.levels[levelIndex]?.activities?.[activityIndex]?.description || title,
           imagePrompt: prompt || title,
           isWorksheet: isWorksheetMode,
           metadata: plan.metadata,
