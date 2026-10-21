@@ -128,7 +128,7 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
           - **모든 학생 (overall / ALL - 중 수준, 전체 70%, 상위 16~84%):** 성취기준에 제시된 지식, 기능, 태도에 대한 이해와 수행이 보통인 대다수 학생들을 위한 핵심 기본 학습 목표.
           - **일부 학생 (some / SOME - 상 수준, 상위 15% 이상):** 성취기준에 제시된 지식, 기능, 태도에 대한 이해와 수행이 우수한 상위 15% 이상 학생들을 위한 심화·확장 학습 목표.
           - **소수 학생 (few / A FEW - 하 수준, 하위 15% 이하):** 성취기준에 제시된 지식, 기능, 태도에 대한 이해와 수행이 미흡한 하위 15% 이하 학생(학습 지원 대상자, 특수교육 대상 학생 등)을 위한 기초 및 수정·지원 중심 학습 목표.
-          - **각 목표는 글머리 기호(•)로 시작하며, 각 항목은 줄바꿈(\\n)으로 분리된 별도의 줄에 작성해주세요.**
+          - **각 목표는 글머리 기호(•)로 시작하며, 각 항목은 실제 줄바꿈으로 분리된 별도의 줄에 작성해주세요. ('\\n' 문자열을 직접 표기하지 마세요.)**
 
       2.  **2단계 - 분석:** 2022 개정 교육과정에 근거하여, '상황 분석(contextAnalysis)'과 '학습자 분석(learnerAnalysis)' 항목을 각각 2~3 문장으로 구체적으로 작성해주세요. 상황 분석은 수업 환경과 맥락을, 학습자 분석은 학생들의 발달 특성을 고려해야 합니다.
       3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표상, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
@@ -191,6 +191,13 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
 
         // 사용자 입력을 최종 결과에 포함시킵니다.
         parsedPlan.achievementStandard = inputs.achievementStandards;
+        if (parsedPlan.detailedObjectives) {
+            parsedPlan.detailedObjectives = {
+                overall: (parsedPlan.detailedObjectives.overall || '').replace(/\\n|₩n/g, '\n'),
+                some: (parsedPlan.detailedObjectives.some || '').replace(/\\n|₩n/g, '\n'),
+                few: (parsedPlan.detailedObjectives.few || '').replace(/\\n|₩n/g, '\n'),
+            };
+        }
 
         // 최종적으로 완전한 형태의 지도안으로 변환하여 반환합니다.
         return parsedPlan as GeneratedLessonPlan;

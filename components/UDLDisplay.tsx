@@ -24,11 +24,12 @@ interface EditableFieldProps {
     textClassName?: string;
 }
 const EditableField: React.FC<EditableFieldProps> = ({ isEditing, value, onChange, className = '', textClassName = '' }) => {
+    const cleanValue = typeof value === 'string' ? value.replace(/\\n|₩n/g, '\n') : value;
     if (isEditing) {
-        return <AutoGrowTextarea value={value} onChange={onChange} className={`w-full p-2 rounded-md bg-slate-50 border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`} />;
+        return <AutoGrowTextarea value={cleanValue} onChange={onChange} className={`w-full p-2 rounded-md bg-slate-50 border border-slate-200 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none ${className}`} />;
     }
     // 'whitespace-pre-wrap' 클래스로 줄바꿈과 공백을 그대로 표시
-    return <p className={`whitespace-pre-wrap ${textClassName}`}>{value}</p>;
+    return <p className={`whitespace-pre-wrap ${textClassName}`}>{cleanValue}</p>;
 };
 
 // UDL 지도안 표시 메인 컴포넌트
@@ -78,7 +79,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
     return (
         <div className="bg-white p-6 rounded-lg shadow-md" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
             <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">보편적 학습 설계(UDL) 지도안</h2>
-            <table className="udl-table w-full border-collapse">
+            <table className="udl-table w-full border-collapse border border-slate-300">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
                 <colgroup>
                     <col style={{ width: '8%' }} /> {/* 단계 */}
@@ -166,10 +167,10 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     </tr>
                     {/* [수정됨] 3단계: colSpan={4} -> colSpan={2} */}
                     <tr className="align-top">
-                        <td className="font-semibold align-middle text-center p-2 border-r border-slate-300 w-1/4">
+                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">
                             3단계<br />보편적 학습설계<br />원리 적용하기
                         </td>
-                        <td colSpan={2} className="p-0 border border-t border-slate-300">
+                        <td colSpan={2} className="p-0 border border-slate-300">
                             <table className="w-full inner-table">
                                 <thead>
                                     <tr className="bg-slate-50">
