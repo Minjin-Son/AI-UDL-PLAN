@@ -172,7 +172,7 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
                 {activity.tableData?.rows.map((row, rI) => (
                   <tr key={rI}>
                     {row.map((cell, cI) => (
-                      <td key={cI} className="border border-slate-300 p-2 h-12 align-middle">
+                      <td key={cI} className="border border-slate-300 p-2 print:p-1.5 h-10 print:h-8 align-middle">
                         <EditableField
                           isEditing={isEditing}
                           value={cell}
@@ -217,8 +217,8 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
               textClassName="mb-2 text-slate-700 font-medium"
             />
             <div
-              className="w-full border-2 border-slate-300 rounded-lg bg-white shadow-inner flex items-center justify-center text-slate-400 overflow-hidden relative"
-              style={{ height: activity.boxHeight ? `${activity.boxHeight}px` : '200px' }}
+              className="w-full border-2 border-slate-300 rounded-lg bg-white shadow-inner flex items-center justify-center text-slate-400 overflow-hidden relative worksheet-drawing-box"
+              style={{ height: activity.boxHeight ? `${activity.boxHeight}px` : '140px' }}
             >
               {/* Box Height Controller if editing? Might be too complex for now, just render box */}
               <span className="z-0">(이곳에 그림을 그리거나 내용을 작성하세요)</span>
@@ -304,15 +304,15 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
 
 
   return (
-    <div className="space-y-8 font-sans" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
+    <div className="space-y-8 print:space-y-3 font-sans" style={{ fontSize: fontSize ? `${fontSize}px` : undefined, fontFamily: fontFamily !== 'inherit' ? fontFamily : undefined }}>
 
       {/* Main Title */}
-      <div className="border-b-2 border-slate-200 pb-4 mb-8">
+      <div className="border-b-2 border-slate-200 pb-4 mb-8 print:pb-2 print:mb-3">
         <EditableField
           isEditing={isEditing}
           value={plan.title}
           onChange={(e) => handleFieldChange('title', e.target.value)}
-          textClassName="text-3xl font-extrabold text-center text-slate-800"
+          textClassName="text-3xl print:text-2xl font-extrabold text-center text-slate-800"
           className="text-center text-2xl font-bold"
         />
         <div className="mt-2 text-center max-w-3xl mx-auto">
@@ -327,11 +327,11 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
       </div>
 
       {/* 2. Levels Loop */}
-      <div className="space-y-12">
+      <div className="space-y-12 print:space-y-0">
         {plan.levels.map((level, levelIndex) => (
-          <div key={levelIndex} className="relative">
+          <div key={levelIndex} className={`relative worksheet-level-section page-break-avoid ${levelIndex > 0 ? 'page-break-before print:pt-2' : ''}`}>
             {/* Level Badge/Separator */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 print:mb-3">
               <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm flex-shrink-0
                         ${level.levelName === '기본' ? 'bg-green-100 text-green-700 border border-green-200' :
                   level.levelName === '보충' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
@@ -360,11 +360,11 @@ const WorksheetDisplay: React.FC<WorksheetDisplayProps> = ({ plan, isEditing, on
             </div>
 
             {/* Activities Grid */}
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 gap-8 print:gap-3">
               {level.activities.map((activity, activityIndex) => (
-                <div key={activityIndex} className="bg-white p-6 rounded-xl border-2 border-slate-100 shadow-sm hover:border-blue-200 transition-colors">
+                <div key={activityIndex} className="bg-white p-6 print:p-4 rounded-xl border-2 border-slate-100 shadow-sm hover:border-blue-200 transition-colors page-break-avoid">
                   {/* Activity Header */}
-                  <div className="flex items-start gap-3 mb-4">
+                  <div className="flex items-start gap-3 mb-4 print:mb-2">
                     <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 mt-1">
                       {activityIndex + 1}
                     </span>

@@ -46,7 +46,8 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
         table { page-break-inside: auto; }
         thead { display: table-header-group; }
         .inner-table { page-break-inside: avoid !important; }
-        .worksheet-level-section { page-break-inside: avoid !important; }
+        .worksheet-level-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+        .worksheet-drawing-box { max-height: 135px !important; }
         .bg-slate-50 { background-color: #f8fafc !important; }
         .bg-slate-100 { background-color: #f1f5f9 !important; }
         .text-slate-800, .text-slate-900, .font-bold, .font-semibold, .font-extrabold { color: #000 !important; }
@@ -71,7 +72,8 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
     .print-preview-mode table { page-break-inside: auto; }
     .print-preview-mode thead { display: table-header-group; }
     .print-preview-mode .inner-table { page-break-inside: avoid !important; }
-    .print-preview-mode .worksheet-level-section { page-break-inside: avoid !important; }
+    .print-preview-mode .worksheet-level-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+    .print-preview-mode .worksheet-drawing-box { max-height: 135px !important; }
     .print-preview-mode .bg-slate-50 { background-color: #f8fafc !important; }
     .print-preview-mode .bg-slate-100 { background-color: #f1f5f9 !important; }
     .print-preview-mode .text-slate-800, .print-preview-mode .text-slate-900, .print-preview-mode .font-bold, .print-preview-mode .font-semibold, .print-preview-mode .font-extrabold { color: #000 !important; }
