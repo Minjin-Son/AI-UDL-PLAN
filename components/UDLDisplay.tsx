@@ -82,9 +82,9 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
             <table className="udl-table w-full border-collapse border border-slate-300">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
                 <colgroup>
-                    <col style={{ width: '1%' }} /> {/* 단계 */}
-                    <col style={{ width: '11%' }} /> {/* 구분 */}
-                    <col style={{ width: '88%' }} /> {/* 내용 */}
+                    <col style={{ width: '115px' }} /> {/* 단계 */}
+                    <col style={{ width: '95px' }} /> {/* 구분 */}
+                    <col /> {/* 내용 */}
                 </colgroup>
                 <thead>
                     {/* [수정됨] header를 5열에서 3열로 변경 */}
@@ -165,12 +165,26 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                             />
                         </td>
                     </tr>
-                    {/* [수정됨] 3단계: colSpan={4} -> colSpan={2} */}
+                    {/* [수정됨] 3단계 및 4단계: 인쇄 시 2,3페이지 상단 헤더에서 '구분' 칸 제거 */}
+                </tbody>
+            </table>
+            <table className="udl-table w-full border-collapse border border-slate-300 mt-[-1px]">
+                <colgroup>
+                    <col style={{ width: '115px' }} /> {/* 단계 */}
+                    <col /> {/* 내용 */}
+                </colgroup>
+                <thead className="hidden print:table-header-group">
+                    <tr className="bg-slate-100">
+                        <th className="py-2 px-3 border border-slate-300 font-semibold whitespace-nowrap w-px">단계</th>
+                        <th className="p-2 border border-slate-300 font-semibold">내용</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <tr className="align-top">
                         <td className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">
                             3단계<br />보편적 학습설계<br />원리 적용하기
                         </td>
-                        <td colSpan={2} className="p-0 border border-slate-300">
+                        <td className="p-0 border border-slate-300">
                             <table className="w-full inner-table">
                                 <thead>
                                     <tr className="bg-slate-50">
@@ -297,7 +311,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     {/* [수정됨] 4단계: colSpan={4} -> colSpan={2} */}
                     <tr>
                         <td className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">4단계<br />보편적 학습설계<br />수업 구상하기</td>
-                        <td colSpan={2} className="p-0 border border-slate-300">
+                        <td className="p-0 border border-slate-300">
                             <table className="w-full inner-table">
                                 <thead>
                                     <tr>

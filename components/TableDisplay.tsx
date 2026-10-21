@@ -217,7 +217,8 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                 </tbody>
             </table>
 
-            <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4">교수·학습 과정</h3>
+            <div className="page-break-before">
+                <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4 print-section-header">교수·학습 과정</h3>
             <table ref={tableRef} className={`w-full border-collapse border border-slate-300 ${tableTextSize} resize-table table-fixed text-slate-700`}>
                 <colgroup>
                     {colWidths.length > 0 ? (
@@ -341,9 +342,12 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                 </tbody>
             </table>
 
-            <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4">평가 계획</h3>
+            </div>
+
+            <div className="page-break-before">
+                <h3 className="text-xl font-bold text-slate-800 mt-8 mb-4 print-section-header">평가 계획</h3>
             {plan.evaluationPlan.criteria.map((criterion, critIndex) => (
-                <div key={critIndex} className="mb-4">
+                <div key={critIndex} className="mb-4 page-break-avoid">
                     <table className={`w-full border-collapse border border-slate-300 ${tableTextSize} text-slate-700`}>
                         <tbody>
                             <tr className="bg-slate-50">
@@ -410,6 +414,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                     </table>
                 </div>
             ))}
+            </div>
         </div>
     );
 };

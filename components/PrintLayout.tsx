@@ -39,7 +39,7 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
     /* 공통 인쇄/미리보기 스타일 */
     @media print {
         .printable-content { padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
-        .page-break-before { page-break-before: always; }
+        .page-break-before { page-break-before: always !important; break-before: page !important; }
         .print-section-header { page-break-after: avoid !important; }
         .page-break-avoid { page-break-inside: avoid !important; }
         tr { page-break-inside: avoid !important; }
