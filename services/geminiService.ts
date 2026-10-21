@@ -82,15 +82,15 @@ const responseSchema = {
             items: {
                 type: "OBJECT",
                 properties: {
-                    title: { type: "STRING", description: "자료의 제목" },
-                    platform: { type: "STRING", description: "플랫폼 (예: YouTube, Google Images)" },
-                    search_query: { type: "STRING", description: "검색에 사용할 검색어" },
+                    title: { type: "STRING", description: "수업 단계별 활용 목적이 드러나는 영상/자료 제목 (예: [도입] 실생활 속 선대칭도형 찾기 영상)" },
+                    platform: { type: "STRING", description: "플랫폼 이름 (반드시 'YouTube'로 작성)" },
+                    search_query: { type: "STRING", description: "유튜브에서 실제 교육 영상이 정확히 검색되도록 '학교급 학년 + 과목 + 교과서 핵심 개념어'(3~5어절)로 조합한 최적의 검색어 (비유적 표현이나 특수문자 제외)" },
                 },
                 required: ["title", "platform", "search_query"]
             }
         }
     },
-    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment"]
+    required: ["lessonTitle", "subject", "gradeLevel", "detailedObjectives", "contextAnalysis", "learnerAnalysis", "udlPrinciples", "assessment", "multimedia_resources"]
 };
 
 // ✅ [새로 추가] 1, 2단계 내용만 생성하기 위한 간단한 설계도
@@ -132,7 +132,10 @@ export const generateUDLLessonPlan = async (inputs: LessonPlanInputs): Promise<G
 
       2.  **2단계 - 분석:** 2022 개정 교육과정에 근거하여, '상황 분석(contextAnalysis)'과 '학습자 분석(learnerAnalysis)' 항목을 각각 2~3 문장으로 구체적으로 작성해주세요. 상황 분석은 수업 환경과 맥락을, 학습자 분석은 학생들의 발달 특성을 고려해야 합니다.
       3.  **3단계 - UDL 원리 적용:** 세 가지 UDL 원칙(참여, 표상, 실행) 각각에 대해 뚜렷하고 실행 가능한 전략을 1~2개씩 제공해 주세요. 각 전략에는 구체적인 가이드라인, 명확한 전략 이름, 수업 주제와 관련된 구체적인 예시가 포함되어야 합니다.
-      4.  **멀티미디어 자료 추천:** 수업 주제와 관련된 유용한 시청각 자료(유튜브 영상, 이미지 등)를 2~3개 추천하여 'multimedia_resources' 배열 형식으로 제공해주세요. 각 자료에는 title, platform, search_query가 포함되어야 합니다.
+      4.  **멀티미디어 자료 추천 (YouTube 검색 정확도 극대화):**
+          - 수업에 바로 활용할 수 있는 YouTube 교육 영상 3개를 'multimedia_resources' 배열로 제공해주세요. (platform은 모두 "YouTube"로 고정)
+          - 3개의 영상은 각각 ① [도입/동기유발] 실생활 사례·흥미 유발 영상, ② [전개/개념이해] EBS·교과서 핵심 개념 설명 영상, ③ [활동/탐구] 실험·조작·심화 활동 영상으로 구성해주세요.
+          - **(핵심!) 'search_query' 작성 규칙:** 유튜브 검색 시 실제 학교 수업용 영상이 정확하게 상위에 검색되도록, 창작된 수업 제목이나 수식어('탐험대', '마법', 특수기호 등)는 절대 넣지 마세요. 반드시 **"초등 5학년 수학 선대칭도형 개념"**, **"EBS 초등 국어 표준어와 방언"**, **"초등 과학 태양계와 별 실험"**처럼 **[학교급/학년] + [과목] + [교과서 단원/성취기준 핵심 개념어]** 3~5어절의 명확한 표준 검색어로만 작성해주세요.
       5.  **평가 계획:** 학생들이 자신의 이해도를 보여줄 수 있는 다양한 방법을 제공하는 평가 섹션을 포함해 주세요.
       6.  **기타:** 'lessonTitle'은 주제와 관련하여 창의적으로 작성하고, 'subject'와 'gradeLevel'은 입력받은 값을 그대로 사용해주세요.
       7.  **출력 형식:** 제공된 스키마를 준수하는 JSON 객체 형식으로, 모든 내용을 한국어로 작성해주세요. (중요!) multimedia_resources를 포함한 모든 필수 항목을 절대로 빠뜨리지 마세요.

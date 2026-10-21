@@ -12,34 +12,51 @@ const MultimediaLinks: React.FC<MultimediaLinksProps> = ({ resources }) => {
     return null;
   }
 
+  // 검색어에서 불필요한 특수기호 제거하여 검색 정확도 향상
+  const cleanSearchQuery = (rawQuery: string) => {
+    return (rawQuery || '')
+      .replace(/[\[\]'"“”‘’!?,.:;~]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   // 검색 링크를 생성하는 함수
   const createSearchUrl = (resource: MultimediaResource) => {
-    const query = encodeURIComponent(resource.search_query);
-    if (resource.platform.toLowerCase().includes('youtube')) {
+    const cleaned = cleanSearchQuery(resource.search_query || resource.title);
+    const query = encodeURIComponent(cleaned);
+    const platformLower = (resource.platform || '').toLowerCase();
+
+    if (platformLower.includes('youtube') || platformLower.includes('유튜브')) {
       return `https://www.youtube.com/results?search_query=${query}`;
     }
-    if (resource.platform.toLowerCase().includes('image')) {
+    if (platformLower.includes('image') || platformLower.includes('이미지')) {
       return `https://www.google.com/search?tbm=isch&q=${query}`;
     }
-    // 기본적으로는 구글 검색 링크를 반환
-    return `https://www.google.com/search?q=${query}`;
+    // 기본적으로는 유튜브 교육 영상 검색 링크를 반환
+    return `https://www.youtube.com/results?search_query=${query}`;
   };
 
   return (
     <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
       <h3 className="text-lg font-bold text-emerald-800 mb-3">💡 추천 멀티미디어 학습 자료</h3>
-      <div className="space-y-2">
-        {resources.map((resource, index) => (
-          <a
-            key={index}
-            href={createSearchUrl(resource)}
-            target="_blank" // 새 탭에서 열기
-            rel="noopener noreferrer" // 보안 설정
-            className="block text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-          >
-            - [{resource.platform}] {resource.title} 검색하기
-          </a>
-        ))}
+      <div className="space-y-2.5">
+        {resources.map((resource, index) => {
+          const cleanedQuery = cleanSearchQuery(resource.search_query || resource.title);
+          return (
+            <a
+              key={index}
+              href={createSearchUrl(resource)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-wrap items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+            >
+              <span className="font-medium">- [{resource.platform || 'YouTube'}] {resource.title}</span>
+              <span className="text-xs bg-white text-emerald-700 border border-emerald-300 px-2 py-0.5 rounded-full no-underline">
+                🔍 검색어: {cleanedQuery}
+              </span>
+            </a>
+          );
+        })}
       </div>
     </div>
   );
