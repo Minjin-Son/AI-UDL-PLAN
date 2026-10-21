@@ -98,7 +98,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     {/* [수정됨] 1단계 구조 변경: 1행 5열 -> 4행 3열 (rowSpan 사용) */}
                     <tr>
                         <td rowSpan={4} className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">1단계<br />목표 확인 및<br />설정하기</td>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">교육과정 성취기준</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50 text-center align-middle whitespace-nowrap">교육과정<br />성취기준</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -109,7 +109,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">모든 학생</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50 text-center align-middle whitespace-nowrap">모든 학생</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -120,7 +120,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">일부 학생</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50 text-center align-middle whitespace-nowrap">일부 학생</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -131,7 +131,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300 bg-slate-50">소수 학생</td>
+                        <td className="font-bold p-2 border border-slate-300 bg-slate-50 text-center align-middle whitespace-nowrap">소수 학생</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -144,7 +144,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     {/* [수정됨] 2단계: colSpan={3} 제거 */}
                     <tr>
                         <td rowSpan={2} className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">2단계<br />상황 분석하기</td>
-                        <td className="font-bold p-2 border border-slate-300">상황 분석하기</td>
+                        <td className="font-bold p-2 border border-slate-300 text-center align-middle whitespace-nowrap">상황 분석하기</td>
                         <td className="p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
@@ -155,7 +155,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                         </td>
                     </tr>
                     <tr>
-                        <td className="font-bold p-2 border border-slate-300">학습자 분석하기</td>
+                        <td className="font-bold p-2 border border-slate-300 text-center align-middle whitespace-nowrap">학습자 분석하기</td>
                         <td className="p-2 border border-slate-300">
                             <EditableField
                                 isEditing={isEditing}
