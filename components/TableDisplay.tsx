@@ -361,7 +361,7 @@ const TableDisplay: React.FC<TableDisplayProps> = ({ plan, isEditing, onPlanChan
                                 </td>
                             </tr>
                             <tr>
-                                <th className="border p-2 text-left font-semibold bg-slate-50">평가 방법</th>
+                                <th className="border p-2 text-left font-semibold bg-slate-50">평가 유형</th>
                                 <td className="border p-2">
                                     <EditableField
                                         isEditing={isEditing}
