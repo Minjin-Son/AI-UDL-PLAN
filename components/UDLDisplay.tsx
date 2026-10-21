@@ -82,14 +82,14 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
             <table className="udl-table w-full border-collapse border border-slate-300">
                 {/* [수정됨] colgroup을 5열에서 3열로 변경 */}
                 <colgroup>
-                    <col style={{ width: '8%' }} /> {/* 단계 */}
-                    <col style={{ width: '12%' }} /> {/* 구분 */}
-                    <col style={{ width: '80%' }} /> {/* 내용 */}
+                    <col style={{ width: '1%' }} /> {/* 단계 */}
+                    <col style={{ width: '11%' }} /> {/* 구분 */}
+                    <col style={{ width: '88%' }} /> {/* 내용 */}
                 </colgroup>
                 <thead>
                     {/* [수정됨] header를 5열에서 3열로 변경 */}
                     <tr className="bg-slate-100">
-                        <th className="p-2 border border-slate-300 font-semibold">단계</th>
+                        <th className="py-2 px-3 border border-slate-300 font-semibold whitespace-nowrap w-px">단계</th>
                         <th className="p-2 border border-slate-300 font-semibold">구분</th>
                         <th className="p-2 border border-slate-300 font-semibold">내용</th>
                     </tr>
@@ -97,7 +97,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                 <tbody>
                     {/* [수정됨] 1단계 구조 변경: 1행 5열 -> 4행 3열 (rowSpan 사용) */}
                     <tr>
-                        <td rowSpan={4} className="font-semibold align-middle text-center p-2 border border-slate-300">1단계<br />목표 확인 및<br />설정하기</td>
+                        <td rowSpan={4} className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">1단계<br />목표 확인 및<br />설정하기</td>
                         <td className="font-bold p-2 border border-slate-300 bg-slate-50">교육과정 성취기준</td>
                         <td className="align-top p-2 border border-slate-300">
                             <EditableField
@@ -143,7 +143,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     </tr>
                     {/* [수정됨] 2단계: colSpan={3} 제거 */}
                     <tr>
-                        <td rowSpan={2} className="font-semibold align-middle text-center p-2 border border-slate-300">2단계<br />상황 분석하기</td>
+                        <td rowSpan={2} className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">2단계<br />상황 분석하기</td>
                         <td className="font-bold p-2 border border-slate-300">상황 분석하기</td>
                         <td className="p-2 border border-slate-300">
                             <EditableField
@@ -167,7 +167,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     </tr>
                     {/* [수정됨] 3단계: colSpan={4} -> colSpan={2} */}
                     <tr className="align-top">
-                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">
+                        <td className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">
                             3단계<br />보편적 학습설계<br />원리 적용하기
                         </td>
                         <td colSpan={2} className="p-0 border border-slate-300">
@@ -296,7 +296,7 @@ const UDLDisplay: React.FC<UDLDisplayProps> = ({ plan, isEditing, onPlanChange, 
                     </tr>
                     {/* [수정됨] 4단계: colSpan={4} -> colSpan={2} */}
                     <tr>
-                        <td className="font-semibold align-middle text-center p-2 border border-slate-300">4단계<br />보편적 학습설계<br />수업 구상하기</td>
+                        <td className="font-semibold align-middle text-center py-2 px-3 border border-slate-300 whitespace-nowrap w-px">4단계<br />보편적 학습설계<br />수업 구상하기</td>
                         <td colSpan={2} className="p-0 border border-slate-300">
                             <table className="w-full inner-table">
                                 <thead>
