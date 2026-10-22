@@ -336,7 +336,7 @@ const App: React.FC = () => {
   const handleGenerateProcessEvaluation = useCallback(async () => {
     if (!generatedPlan || isProcessEvaluationLoading || generatedPlan.processEvaluationWorksheet || !generatedPlan.udlEvaluation) { // ✅ UDL 평가 계획이 있어야 생성 가능
       if (!generatedPlan?.udlEvaluation) {
-        setError('과정중심평가지를 생성하려면 먼저 UDL 평가 계획을 생성해야 합니다.');
+        setError('학생평가 체크리스트를 생성하려면 먼저 UDL 평가 계획을 생성해야 합니다.');
       }
       return;
     }
@@ -369,7 +369,7 @@ const App: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : '과정중심평가지를 생성하는 중 오류가 발생했습니다.');
+      setError(err instanceof Error ? err.message : '학생평가 체크리스트를 생성하는 중 오류가 발생했습니다.');
     } finally {
       setIsProcessEvaluationLoading(false);
     }

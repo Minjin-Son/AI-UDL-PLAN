@@ -146,7 +146,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             <div>
                 <EditableField
                     isEditing={isEditing}
-                    value={plan.title}
+                    value={(plan.title || '').replace(/과정\s*중심\s*평가지/g, '학생평가 체크리스트')}
                     onChange={(e) => handleFieldChange('title', e.target.value)}
                     textClassName="text-2xl font-bold text-slate-800 mb-4 text-center"
                 />
@@ -250,21 +250,11 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             <div className="space-y-6">
                 <div>
                     <h4 className="font-bold text-slate-800 mb-2">교사 종합 의견</h4>
-                    <div className="border border-slate-300 p-2 rounded-md min-h-[100px] text-slate-700">
+                    <div className="border border-slate-300 p-3 rounded-md min-h-[200px] text-slate-700">
                         <EditableField
                             isEditing={isEditing}
                             value={plan.overallFeedback.teacherComment}
                             onChange={(e) => handleFeedbackChange('teacherComment', e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div>
-                    <h4 className="font-bold text-slate-800 mb-2">자기 성찰</h4>
-                    <div className="border border-slate-300 p-2 rounded-md min-h-[100px] text-slate-700">
-                        <EditableField
-                            isEditing={isEditing}
-                            value={plan.overallFeedback.studentReflection}
-                            onChange={(e) => handleFeedbackChange('studentReflection', e.target.value)}
                         />
                     </div>
                 </div>
