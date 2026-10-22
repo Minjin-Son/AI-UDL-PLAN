@@ -905,7 +905,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 
     const prompt = `
         당신은 한국 초등학교의 과정 중심 평가 자료 제작 전문가입니다.
-        아래 수업 정보와 UDL 평가 계획을 바탕으로, 교사가 학생의 학습 과정을 구체적으로 관찰·평가하고 피드백할 수 있는 '학생평가 체크리스트'를 생성해 주세요.
+        아래 수업 정보와 UDL 평가 계획을 바탕으로, 교사가 학생의 학습 과정을 구체적으로 관찰·평가하고 피드백할 수 있는 '학생평가 교사 체크리스트'를 생성해 주세요.
 
         **수업 정보:**
         - 학년: ${gradeLevel} (${semester})
@@ -916,7 +916,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
         ${evaluationContext}
 
         **평가지 생성 지침:**
-        1.  **전체 구조:** 체크리스트의 제목(예: '[과목] 학생평가 체크리스트 - [수업 주제]'), 학생 정보 기입란, 전체 설명, 평가 항목 표, 그리고 교사 종합 의견란으로 구성됩니다.
+        1.  **전체 구조:** 체크리스트의 제목(예: '[과목] 학생평가 교사 체크리스트 - [수업 주제]'), 학생 정보 기입란, 전체 설명, 평가 항목 표, 그리고 교사 종합 의견란으로 구성됩니다.
         2.  **평가 항목 (evaluationItems):**
             -   학습 목표와 UDL 평가 과제를 기반으로 2~4개의 핵심적인 '평가 기준(criterion)'을 설정해 주세요. 평가 기준은 학생의 행동이나 산출물을 통해 관찰 가능한 형태로 서술되어야 합니다.
             -   각 평가 기준에 대해 '상(excellent)', '중(good)', '하(needsImprovement)' 세 단계의 수준별 성취 내용을 구체적으로 기술해 주세요.
@@ -943,7 +943,7 @@ export const generateProcessEvaluationWorksheet = async (inputs: LessonPlanInput
 
     } catch (error) {
         console.error("Error generating process evaluation worksheet:", error);
-        throw new Error("AI로부터 학생평가 체크리스트를 생성하는 데 실패했습니다.");
+        throw new Error("AI로부터 학생평가 교사 체크리스트를 생성하는 데 실패했습니다.");
     }
 };
 

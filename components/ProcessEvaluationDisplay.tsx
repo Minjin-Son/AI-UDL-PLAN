@@ -146,7 +146,7 @@ const ProcessEvaluationDisplay: React.FC<ProcessEvaluationDisplayProps> = ({ pla
             <div>
                 <EditableField
                     isEditing={isEditing}
-                    value={(plan.title || '').replace(/과정\s*중심\s*평가지/g, '학생평가 체크리스트')}
+                    value={(plan.title || '').replace(/과정\s*중심\s*평가지|학생평가\s*체크리스트/g, '학생평가 교사 체크리스트')}
                     onChange={(e) => handleFieldChange('title', e.target.value)}
                     textClassName="text-2xl font-bold text-slate-800 mb-4 text-center"
                 />

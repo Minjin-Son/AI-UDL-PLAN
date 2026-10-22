@@ -119,7 +119,7 @@ const PrintLayout: React.FC<{ plan: GeneratedLessonPlan }> = ({ plan }) => {
             )}
 
             {plan.processEvaluationWorksheet && (
-                <PrintSection title="학생평가 체크리스트">
+                <PrintSection title="학생평가 교사 체크리스트">
                     <ProcessEvaluationDisplay plan={plan.processEvaluationWorksheet} isEditing={false} onPlanChange={dummyOnPlanChange as any} />
                 </PrintSection>
             )}
