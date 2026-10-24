@@ -13,7 +13,7 @@ const Header: React.FC = () => {
               </svg>
             </div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight">
-              AI UDL 지도안 생성기
+              AI 기반 UDL 플랫폼
             </h1>
           </div>
           
