@@ -42,22 +42,26 @@ const generateImageForActivity = async (
       Create a high-resolution, printable A4 educational worksheet for elementary/middle school students.
       
       [Header Information]
-      - Grade & Subject: ${gradeInfo} ${subjectInfo}
-      - Worksheet Level: [${levelInfo} 과정]
-      - Lesson Topic: "${topicInfo}"
-      - Title: "${activityTitle}"
+      - Grade & Subject: ${gradeInfo} ${subjectInfo} [${levelInfo} 과정]
+      - Main Title: "${topicInfo}"
       
       [Worksheet Content & Structure]
-      - Top section: Clear title header with student information boxes (Grade: __, Class: __, No: __, Name: __).
-      - Main section: Cleanly structured questions and activities based on:
+      - Top section: Clean, large title header ("${topicInfo}") and a neat student information box (학년: __ 반: __ 번호: __ 이름: ____). Do NOT add any small maps with text or character speech bubbles in the header.
+      - Main section: Cleanly structured questions, tables, and answer boxes based ONLY on the following content:
 ${activitySummaries}
-      - Includes clear geometric answer boxes, ruled lines for writing answers, and neat table grids.
-      - Includes a clean black-and-white educational diagram or scientific illustration relevant to "${topicInfo}".
+      - Use clean geometric answer boxes, ruled lines for writing answers, and neat table grids.
       
-      [Crucial Visual Rules - MUST FOLLOW]
-      1. BACKGROUND: Pure, solid white background ONLY (#FFFFFF). Absolutely NO wooden desk, NO background table, NO drop shadows, NO borders or environment outside the white paper.
-      2. FORMAT: Portrait A4 paper layout (3:4 aspect ratio), clean black line art style.
-      3. QUALITY: High quality, clean typography, ready for printing directly on A4 paper for actual classroom use.
+      [Crucial Visual & Typography Rules - MUST FOLLOW STRICTLY]
+      1. NO GARBLED OR TINY TEXT (글자 깨짐 및 임의 지명/말풍선 절대 금지):
+         - NEVER put any text, labels, region/place names (지명), or speech bubbles (말풍선) inside illustrations, maps, icons, or decorative borders at the top or bottom of the worksheet.
+         - If any small icon or simple line-art illustration is included, it MUST be 100% pure visual line art with ZERO text or letters inside or around it.
+         - Keep the bottom drawing/answer box completely clean and simple without decorative speech bubbles, tags, or random labels in the corners.
+      2. EXACT TEXT ONLY:
+         - Write ONLY the exact Korean text provided above. Do NOT invent or hallucinate extra place names, extra labels, or extra small annotations anywhere on the worksheet.
+         - All Korean characters must be rendered in large, crisp, clear, standard Korean Sans-Serif (Gothic) typography so every character is 100% legible and accurate.
+      3. BACKGROUND & FORMAT:
+         - Pure, solid white background ONLY (#FFFFFF). Absolutely NO wooden desk, NO background table, NO drop shadows, NO borders outside the white paper.
+         - Portrait A4 paper layout (3:4 aspect ratio), clean black line art style, ready for direct classroom printing.
     `.trim();
   } else {
     detailedPrompt = `
@@ -71,7 +75,7 @@ ${activitySummaries}
       [Crucial Visual Rules]
       1. BACKGROUND: Pure, solid white background ONLY (#FFFFFF). Absolutely NO background scene, NO shadows.
       2. STYLE: Clean line art or simple flat vector illustration with bright, clear colors.
-      3. NO TEXT: Absolutely NO text, NO letters, NO numbers inside the image.
+      3. NO TEXT: Absolutely NO text, NO letters, NO numbers, NO speech bubbles, and NO labels inside the image.
     `.trim();
   }
 
